@@ -1,0 +1,3 @@
+{time:11:22:31}	{ip:192.168.1.15}	{error:select k,v from plf_rebate}	{file:http://user.test.cn:8000/index.php/admin/rebate}	
+{time:16:33:09}	{ip:192.168.1.15}	{error:UPDATE plf_rebate_config SET `rebate_date`='2016-02-05' WHERE k='rebate_date' limit 1}	{file:http://user.test.cn:8000/index.php/admin/rebate/calRebate}	
+{time:17:09:18}	{ip:192.168.1.15}	{error:select user_id,(sum(money-money_rebate) as money_norebate from plf_rebate where typeid=1 and status!=2 and addtime<'2016-02-20 23:59:59' group by user_id}	{file:http://user.test.cn:8000/index.php/admin/rebate/calRebate}	

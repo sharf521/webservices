@@ -1,0 +1,20 @@
+{time:14:18:49}	{ip:192.168.1.15}	{error:select id,user_id,pids,`position`,money,plate from plf_zj where status=0 order by id}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:14:34:43}	{ip:192.168.1.15}	{error:UPDATE plf_zj SET `status`='1' WHERE  aid=1 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=1 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=1 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=1 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=2 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=2 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=2 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=3 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=3 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=3 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=4 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=4 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=4 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=5 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=5 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=5 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=6 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=6 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	
+{time:17:00:10}	{ip:192.168.1.15}	{error:select user_id from plf_zj where id=6 and childsize==3 limit 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	

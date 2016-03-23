@@ -1,0 +1,1 @@
+{time:11:52:18}	{ip:192.168.1.15}	{error:update plf_zj set income=income+150,dayplan=3 where id=1 limti 1}	{file:http://user.test.cn:8000/index.php/admin/zj/calZj}	

@@ -1,0 +1,1 @@
+{time:16:56:23}	{ip:192.168.1.15}	{error:select user_id,sum(r.money-r.money_rebate) as money_norebate from plf_rebate  where typeid!=1 and status=1 and addtime<'2016-03-18 23:59:59' group by user_id}	{file:http://user.test.cn:8000/index.php/admin/rebate/cal3}	

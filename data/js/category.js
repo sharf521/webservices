@@ -1,0 +1,12 @@
+var cate_arr=new Array();
+cate_arr[0]='1#仓库商品分类[SER]7#文章分类[SER]31#全部商品';
+cate_arr[1]='2#尊王[SER]5#杜康[SER]6#茅台';
+cate_arr[2]='3#六味辞[SER]4#鸿花辞[SER]20#尊王';
+cate_arr[5]='15#陈酿杜康';
+cate_arr[7]='8#帮助[SER]9#资讯[SER]13#活动[SER]21#事故处理[SER]30#推荐阅读[SER]36#限行提醒[SER]37#服务协议';
+cate_arr[8]='18#车险知识';
+cate_arr[9]='11#网站公告[SER]14#网站动态';
+cate_arr[21]='22#保护现场[SER]23#责任认定[SER]24#伤残鉴定[SER]25#事故赔偿[SER]26#保险理赔[SER]27#酒后驾车[SER]28#事故私了[SER]29#路外事故';
+cate_arr[31]='32#中外名酒[SER]38#茗茶';
+cate_arr[32]='33#白酒[SER]34#啤酒[SER]35#葡萄酒';
+cate_arr[38]='39#铁观音[SER]40#毛尖';

@@ -1,0 +1,6 @@
+{time:16:24:26}	{ip:192.168.1.15}	{error:select count(1) as num from plf_zj_log fl where 1=1  }	{file:http://user.test.cn:8000/index.php/admin/zj/zjlog}	
+{time:16:24:26}	{ip:192.168.1.15}	{error:select fl.* from plf_zj_log fl where 1=1 order by fl.id desc  limit 0, 10}	{file:http://user.test.cn:8000/index.php/admin/zj/zjlog}	
+{time:16:30:45}	{ip:192.168.1.15}	{error:select count(1) as num from plf_zj_log fl where 1=1  }	{file:http://user.test.cn:8000/index.php/admin/zj/zjlog}	
+{time:16:30:45}	{ip:192.168.1.15}	{error:select fl.* from plf_zj_log fl where 1=1 order by fl.id desc  limit 0, 10}	{file:http://user.test.cn:8000/index.php/admin/zj/zjlog}	
+{time:16:38:05}	{ip:192.168.1.15}	{error:select count(1) as num from plf_zj_log fl where 1=1  }	{file:http://user.test.cn:8000/index.php/admin/zj/zjlog}	
+{time:16:38:05}	{ip:192.168.1.15}	{error:select fl.* from plf_zj_log fl where 1=1 order by fl.id desc  limit 0, 10}	{file:http://user.test.cn:8000/index.php/admin/zj/zjlog}	

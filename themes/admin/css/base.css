@@ -1,0 +1,168 @@
+/* CSS Document */
+@charset "utf-8";
+html{overflow-x:hidden; overflow-y:auto}
+html,body{height:100%;margin:0px; padding:0px;font-size:12px;   font-family:"微软雅黑"; }
+div,p,dl,dt,dd,h2,h3,form{ margin:0; padding:0;}
+td,div{font-size:12px;   font-family:"微软雅黑";}
+ul, li{ list-style:none; padding:0; margin:0;}
+input{ padding:0; margin:0;}
+img { border:0;}
+a{ text-decoration:none; color:#0099FF}
+.fleft{ float:left;}
+.fright{ float:right}
+.clear{ clear:both;}
+.form1{margin:5px; background-color:#efefef; padding:5px; border:1px solid #ccc}
+
+
+.btn3 {background: url(../images/btn3.gif);display: block;width: 81px;height: 20px;line-height: 20px;color: #fff;text-align: center;text-decoration: none; overflow:hidden}
+.btn3 a{color: #fff;}
+.submit{ padding:2px 8px 1px 8px;background: #CDECFF;border: 1px solid #5BBDFF;color: 000;cursor: pointer; min-width:60px; text-align:center;}
+
+
+
+/*登录*/
+.c{clear:both;font:0px/0px Arial;overflow:hidden;height:0;width:0;}
+.cp{cursor:pointer;}
+/*logo*/
+.logo{height:64px;font-size:36px; font-weight:bold; color:#0273af;font-family:'微软雅黑'}
+/*layout*/
+.wrap{width:800px;height:580px;margin-left:auto;margin-right:auto;background:url(../images/bg.jpg) center 0 no-repeat;}
+.head{padding:100px 0 0 200px;}
+.bottom{text-align:center;margin:auto;color:#888;}
+/*login*/
+.login{padding:60px 0 0 170px;}
+.login th{height:35px;line-height:31px;list-style:none;text-align:right;font-weight:normal;width:190px;font-size:12px;padding-right:5px;}
+.login td{text-align:left;font-size:12px;}
+.input{display:inline-block;border: 1px solid; border-color: #8cb7e1 #e3f0fc #e3f0fc #8cb7e1;font-size:12px;vertical-align:middle;color:#666;padding:4px 4px 5px 23px;background:#fff url(../images/login-icon.gif) no-repeat}
+.input input{border:0 none;background:none; }
+.admin_pwd{ background-position:0 -50px;}
+.lg_num{ background-position:0 -100px;}
+.customquest{ background-position:0 -150px;}
+.admin_btn{margin-top:1em;width:80px;height:30px; cursor:pointer; background:url(../images/login.gif) center 0 no-repeat; border:none}
+/*登录*/
+
+.top{background-color:#0f74aa}
+.top b{line-height:82px; font-size:26px; color:#fff; text-shadow:1px 1px #333; padding-left:18px; font-family:'微软雅黑'}
+.topright{float: right;margin-top:50px;padding-right: 30px;font-size: 14px;color: #fff;line-height: 30px;}
+.topright a{ color:#fff}
+
+.left{width:200px;float:left}
+.right{float:left; min-width:800px}
+.left .menu li{ line-height:38px; height:38px; background:#fff; border:1px solid #ccc; margin-top:-1px; padding-left:40px}
+/*用户管理*/
+.left .menu li a{display:block;color:#0273af; height:38px; line-height:38px; padding-left:30px}
+/*友情链接*/
+.linkljcss{background:url(../images/link.jpg) no-repeat left;}
+/*文章管理*/
+.wzglcss{background:url(../images/wzgl.jpg) no-repeat left;}
+.wzcss{background:url(../images/wz.jpg) no-repeat left;}
+/*广告管理*/
+.ggglcss{background:url(../images/gggl.jpg) no-repeat left;}
+/*联动管理*/
+.ldglcss{background:url(../images/ldgl.jpg) no-repeat left;}
+
+.wzgl{background:url(../images/gl.png) no-repeat left; }
+.xitcs{background:url(../images/gll.gif) no-repeat left; }
+
+.pass{background:url(../images/pass.png) no-repeat left;}
+.exit{background:url(../images/dc.png) no-repeat left;}
+
+.userw{ background:url(../images/new_doc.png) no-repeat left;}
+.clearhc{background: url(../images/qchc.jpg) no-repeat left;}
+.tixian{ background:url(../images/tixian.png) no-repeat left; }
+.zhifucss{  background:url(../images/zhifu.png) no-repeat left; }
+
+
+.rightTop {border-bottom: 1px solid #c1dff3;height: 50px;background: #f0f7ff;padding: 0 20px; margin-bottom:5px;}
+.rightTop p {line-height: 22px;float: left;color: #444;padding-top: 15px;}
+.rightTop .subnav{float:left; margin-left:20px}
+.rightTop .subnav li {float: left;margin-right: 8px;margin-top: 15px;}
+.rightTop .subnav li span {font-weight: bold;color: #444;position: relative;top: 3px;}
+
+.flexme{ width:100%; border-collapse:collapse; background:#fff;  margin-bottom:10px;}
+.flexme td{text-align:center;border:1px solid #ccc; height:28px; cursor:defatablet}
+.flexme .l{ text-align:left;padding-left:5px;}
+.theadtd{ background:url(../images/tablebg.jpg) repeat-x; height:28px; border:1px solid #ccc}
+.theadtd th{ border:1px solid #ccc; text-align:center; height:28px;}
+
+
+/*---------------分页----*/
+.page{padding-top:10px}
+.p_bar {
+clear:both;
+margin:5px 0; text-align:center;
+margin-bottom:20px;
+}
+.p_bar a {
+font-size:12px;
+text-decoration:none;
+padding:2px 5px;
+}
+.p_bar a:hover {
+background:#F5FBFF;
+border:1px solid #86B9D6;
+text-decoration:none;
+}
+
+.p_info {
+background:#F5FBFF;
+border:1px solid #86B9D6;
+margin-right:1px;
+padding:2px 5px;
+}
+.p_num {
+background:#FFF;
+border:1px solid #DEDEB8;
+margin-right:1px;
+}
+.p_redirect {
+background:#FFF;
+border:1px solid #DEDEB8;
+margin-right:1px;
+font-weight:700;
+font-size:12px;
+}
+
+
+.p_curpage {
+margin-right:1px;
+border:1px solid #DEDEB8;
+background:#FFFFD9;
+color:#92A05A;
+font-weight:700;
+padding:2px 5px;
+}
+
+
+.multiple{height:120px; width:200px; margin-right:5px}
+/*弹出层*/
+#sharf_Dtop {
+	BORDER-BOTTOM: #cccccc 3px solid; BORDER-RIGHT: #cccccc 3px solid
+}
+#sharf_Dtop .dbody {
+	BORDER: #333333 1px solid;  PADDING-BOTTOM: 1px; PADDING-LEFT: 1px; PADDING-RIGHT: 1px; BACKGROUND: #ebf0f6;PADDING-TOP: 1px
+}
+#sharf_Dtop .dhead {
+	BORDER-BOTTOM: #333333 1px solid; PADDING: 0px; LINE-HEIGHT: 20px; BACKGROUND: url(/images/close.gif) #2875b9 no-repeat right 4px; LETTER-SPACING: 1px; COLOR: #ffffff; CURSOR: move; FONT-WEIGHT: bold;
+}
+#sharf_Dtop .dhead SPAN {
+	TEXT-ALIGN: right; WIDTH: 22px; DISPLAY: block; FLOAT: right; HEIGHT: 19px; CURSOR: pointer
+}
+#sharf_Dtop .dbox {
+	PADDING-BOTTOM: 8px; LINE-HEIGHT: 200%; PADDING-LEFT: 8px; PADDING-RIGHT: 8px; PADDING-TOP: 8px
+}
+
+#dialog{display: none;position: fixed;top: 17%;left: 50%; margin-left: -300px; width: 600px; background-color: #EEE; color: #333; border: 1px solid black;padding: 12px;}
+.close{float:right; color:red; cursor:pointer}
+
+
+
+.uploadfile_v1{float: left;height: 41px;background: #f5696c;width: 144px;position:relative;}
+.uploadfile_v2{text-align:center;line-height:41px;font-size:15px;font-weight:bold}
+.uploadfile{width: 100%; height: 100%;cursor: pointer;font-size: 30px;filter:alpha(opacity=0); -moz-opacity:0;	position:absolute;opacity:0;left:0px;top: 0px;}
+/*
+<div class="uploadfile_v1">
+    <div class="uploadfile_v2">上传图片</div>
+    <input type="file" class="uploadfile">
+</div>*/
+
