@@ -10,10 +10,13 @@ class zj extends Manager
     {
         $arr=array(
             'user_id'		=>(int)$_GET['user_id'],
+            'id'		=>(int)$_GET['id'],
+            'money'		=>(int)$_GET['money'],
+            'plate'		=>(int)$_GET['plate'],
             'page'			=>(int)$_REQUEST['page'],
             'epage'			=>10
         );
-        $data['result']=m('zj/getFbbByPage',$arr);
+        $data['result']=m('zj/getZjByPage',$arr);
         $this->view('zj',$data);
     }
     function add($data)
@@ -59,11 +62,13 @@ class zj extends Manager
             'typeid'		=>$_GET['typeid'],
             'user_id'		=>(int)$_GET['user_id'],
             'zj_id'		=>(int)$_GET['zj_id'],
-            'money'		=>(float)$_GET['money'],
+            'in_zj_id'		=>(int)$_GET['in_zj_id'],
+            'money'		=>(int)$_GET['money'],
+            'plate'		=>(int)$_GET['plate'],
             'page'			=>(int)$_REQUEST['page'],
             'epage'			=>10
         );
-        $data['result']=m('zj/getFbbLogByPage',$arr);
+        $data['result']=m('zj/getZjLogByPage',$arr);
         $this->view('zj',$data);
     }
 }

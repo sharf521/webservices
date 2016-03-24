@@ -12,10 +12,10 @@ require 'core/URI.php';
 $uriClass=new URI();
 require 'core/page.class.php';
 $pager=new Page();
-require 'core/mysql.class.php';
-$mysql = new Mysql($db_config);
-//require 'core/pdo.php';
-//$mysql = Db::instance('db1');
+//require 'core/mysql.class.php';
+//$mysql = new Mysql($db_config);
+require 'core/pdo.php';
+$mysql = Db::instance('db1');
 
 require 'core/Controller.php';
 $_G['class']=($uriClass->get(0)!='')?$uriClass->get(0):'index';

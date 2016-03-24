@@ -70,6 +70,11 @@ if($this->func=='index')
     </table>
     <? if(empty($result['total'])){echo "无记录！";}else{echo $result['page'];}?>
 <?
+    $config_result=$this->mysql->get_all("select k,v,remark from {$this->dbfix}rebate_config");
+    $arr=array();
+    foreach($config_result as $c){
+        echo "{$c['remark']}：{$c['v']}<br>";
+    }
 }
 elseif($this->func=='add'||$this->func=='edit')
 {

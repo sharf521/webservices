@@ -4,14 +4,11 @@ class ajax extends Control
 {
     function getFbbTree()
     {
-        $user_id=intval($_REQUEST['user_id']);
-        $username=$_REQUEST['username'];
-        if($user_id!=0){
-            $row=$this->mysql->one('fbb',array('user_id'=>$user_id));
+        $id=intval($_REQUEST['id']);
+        if($id!=0){
+            //$row=$this->mysql->one('fbb',array('id'=>$id));
         }
-        elseif(!empty($username)){
-            $row=$this->msyql->one('user',array('username'=>$username));
-        }
+        $row=$this->mysql->get_one("select * from {$this->dbfix}fbb order by id limit 1");
         if(empty($row)){
             echo 'no user';
             return;
@@ -20,6 +17,7 @@ class ajax extends Control
 
 
         $first_userid=$user_ids[0];
+
         $first_row=$this->mysql->one('fbb',array('id'=>$first_userid));
         $path=$first_row['pids'];
 
@@ -60,6 +58,28 @@ class ajax extends Control
         $sql="select a.user_id,a.user_name,a.tuijianid,a.lishuid,b.checktime from {member} a join {my_webserv} b on a.user_id=b.user_id where a.user_id in($str) order by b.checktime";
 
 */
+
+    }
+    function getZjTree()
+    {
+        $row=$this->mysql->get_one("select * from {$this->dbfix}zj order by id limit 1");
+        if(empty($row)){
+            echo 'no user';
+            return;
+        }
+        $user_ids=explode(',',$row['pids']);
+
+
+        $first_id=$user_ids[0];
+
+        $first_row=$this->mysql->one('zj',array('id'=>$first_id));
+        $path=$first_row['pids'];
+
+
+        $sql="select id,user_id,money,pid,addtime from {$this->dbfix}zj where status!=0 and pids like '{$path}%' order by id";
+        $result2=$this->mysql->get_all($sql);
+        //print_r($result2);
+        echo json_encode($result2);
 
     }
 }

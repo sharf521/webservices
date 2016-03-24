@@ -13,6 +13,8 @@ if($this->func=='index')
         <div class="search">
             金额：<input type="text" size="10" name="money" value="<?=$_GET['money']?>">&nbsp;&nbsp;
             用户ID：<input type="text" size="10" name="user_id" value="<?=$_GET['user_id']?>">&nbsp;&nbsp;
+            增进ID：<input type="text" size="10" name="id" value="<?=$_GET['id']?>">&nbsp;&nbsp;
+            盘数：<input type="text" size="10" name="plate" value="<?=$_GET['plate']?>">&nbsp;&nbsp;
             <input type="submit" class="but2" value="查询" />
         </div>
     </form>
@@ -21,14 +23,17 @@ if($this->func=='index')
             <th>ID</th>
             <th>用户ID</th>
             <th>金额</th>
-            <th>推荐人</th>
-            <th>推荐人推荐个数</th>
-            <th>推荐人ids</th>
+            <th>收入</th>
+            <th>上层id</th>
+            <th>路径</th>
+            <th>盘数</th>
+            <th>盘数位置</th>
+            <th>25天计划</th>
             <th>状态</th>
             <th>添加时间</th>
         </tr>
         <?
-        $arr_status=array('未结算','己结算');
+        $arr_status=array('未计算','正常','己滑落');
         foreach($result['list'] as $row)
         {
             ?>
@@ -36,9 +41,13 @@ if($this->func=='index')
                 <td><?=$row['id']?></td>
                 <td><?=$row['user_id']?></td>
                 <td><?=(float)$row['money']?></td>
+
+                <td><?=$row['income']?></td>
                 <td><?=$row['pid']?></td>
-                <td><?=$row['position']?></td>
-                <td class="l"><?=$row['pids']?></td>
+                <td class="l"><?=str_replace(',','->',rtrim($row['pids'],','))?></td>
+                <td><?=$row['plate']?></td>
+                <td><?=$row['index']?></td>
+                <td><?=$row['dayplan']?></td>
                 <td><?=$arr_status[$row["status"]]?></td>
                 <td><?=$row['addtime']?></td>
             </tr>
@@ -78,6 +87,11 @@ elseif($this->func=='add'||$this->func=='edit')
     </form>
 <?
 }elseif($this->func=='zjlog'){
+    $arr_typeid=array(
+        '3,1,'=>'T1',
+        '3,2,'=>'T2',
+        '3,3,'=>'滑落',
+    );
     ?>
     <div class="main_title">
         <span>对列收益流水</span>列表
@@ -86,17 +100,31 @@ elseif($this->func=='add'||$this->func=='edit')
         <div class="search">
             金额：<input type="text" size="10" name="money" value="<?=$_GET['money']?>">&nbsp;&nbsp;
             用户ID：<input type="text" size="10" name="user_id" value="<?=$_GET['user_id']?>">&nbsp;&nbsp;
-            增进_ID：<input type="text" size="10" name="zj_id" value="<?=$_GET['zj_id']?>">&nbsp;&nbsp;
+            增进ID：<input type="text" size="10" name="zj_id" value="<?=$_GET['zj_id']?>">&nbsp;&nbsp;
+            进入增进ID：<input type="text" size="10" name="in_zj_id" value="<?=$_GET['in_zj_id']?>">&nbsp;&nbsp;
+            盘数：<input type="text" size="10" name="plate" value="<?=$_GET['plate']?>">&nbsp;&nbsp;
+            类型：
+            <select name="typeid">
+                <option value=""<? if($_GET['typeid']==""){?> selected="selected"<? }?>>请选择</option>
+                <?
+                foreach($arr_typeid as $i=>$v){
+                    ?>
+                    <option value="<?=$i?>" <? if($_GET['typeid']==$i){?> selected="selected"<? }?>><?=$v?></option>
+                <?
+                }
+                ?>
+            </select>&nbsp;&nbsp;
             <input type="submit" class="but2" value="查询" />
         </div>
     </form>
     <table class="table">
         <tr class="bt">
             <th>ID</th>
-            <th>用户ID</th>
-            <th>增进_ID/user_id</th>
+            <th>zj_id/用户ID</th>
+            <th>进入zj_id/进入用户ID</th>
             <th>金额</th>
-            <th>layer</th>
+            <th>盘数</th>
+            <th>类型</th>
             <th>添加时间</th>
         </tr>
         <?
@@ -105,10 +133,11 @@ elseif($this->func=='add'||$this->func=='edit')
             ?>
             <tr>
                 <td><?=$row['id']?></td>
-                <td><?=$row['user_id']?></td>
-                <td><?=$row['zj_id']?>/<?=$row['zj_user_id']?></td>
+                <td><?=$row['zj_id']?>/<?=$row['user_id']?></td>
+                <td><?=$row['in_user_id']?>/<?=$row['in_zj_id']?></td>
                 <td><?=(float)$row['money']?></td>
-                <td><?=$row['layer']?></td>
+                <td><?=$row['plate']?></td>
+                <td><?=$arr_typeid[$row["typeid"]]?></td>
                 <td><?=$row['addtime']?></td>
             </tr>
         <? }?>

@@ -77,19 +77,18 @@ class rebateClass extends Model
         $i=0;
         while($today>$rebate_date && $i<1000) {//最多1000次
             $rebate_date=date('Y-m-d',strtotime($rebate_date)+3600*24);
-            $this->mysql->query("start transaction");
-            $transaction_result=$this->mysql->update('rebate_config',array('v'=>$rebate_date),"k='rebate_date' limit 1");
-            if($transaction_result!==true){
-                $this->mysql->query("rollback");
+            try {
+                $this->mysql->beginTransaction();
+
+                $this->mysql->update('rebate_config',array('v'=>$rebate_date),"k='rebate_date' limit 1");
+                $this->calEveryDay($rebate_date);
+                $this->calDividend($rebate_date);
+
+                $this->mysql->commit();
+            } catch (Exception $e) {
+                $this->mysql->rollBack();
+                echo "Failed: " . $e->getMessage();
                 return false;
-            }
-            $transaction_result1=$this->calEveryDay($rebate_date);
-            $transaction_result2=$this->calDividend($rebate_date);
-            if($transaction_result1!==true || $transaction_result2!=true){
-                $this->mysql->query("rollback");
-                return false;
-            }else{
-                $this->mysql->query("commit");
             }
             $i++;
         }
@@ -97,26 +96,27 @@ class rebateClass extends Model
     }
     function cal2()
     {
-        $this->mysql->query("start transaction");
-        $transaction_result=$this->calRebateList();
-        if($transaction_result!==true){
-            $this->mysql->query("rollback");
+        try {
+            $this->mysql->beginTransaction();
+            $this->calRebateList();
+            $this->mysql->commit();
+        } catch (Exception $e) {
+            $this->mysql->rollBack();
+            echo "Failed: " . $e->getMessage();
             return false;
-        }else{
-            $this->mysql->query("commit");
         }
         return true;
     }
     function cal3()
     {
-        //30倍返
-        $this->mysql->query("start transaction");
-        $transaction_result=$this->calRebate_30TimesReturn();
-        if($transaction_result!==true){
-            $this->mysql->query("rollback");
+        try {
+            $this->mysql->beginTransaction();
+            $this->calRebate_30TimesReturn();
+            $this->mysql->commit();
+        } catch (Exception $e) {
+            $this->mysql->rollBack();
+            echo "Failed: " . $e->getMessage();
             return false;
-        }else{
-            $this->mysql->query("commit");
         }
         return true;
     }
@@ -127,10 +127,7 @@ class rebateClass extends Model
         $sql="select id,user_id,money,addtime,money_rebate,typeid from {$this->dbfix}rebate where status=0 ";
         $result=$this->mysql->get_all($sql);
         foreach($result as $row){
-            $transaction_result=$this->mysql->update('rebate',array('status'=>1),"id={$row['id']} limit 1");//改为己处理
-            if($transaction_result!==true){
-                return false;
-            }
+            $this->mysql->update('rebate',array('status'=>1),"id={$row['id']} limit 1");//改为己处理
             $user=$this->mysql->one('rebate_user',array('user_id'=>$row['user_id']));
             if($row['typeid']==3){
                 $row['money']=$row['money']*2;
@@ -147,20 +144,13 @@ class rebateClass extends Model
             $nums100=bcdiv($money_100,100);//100排队个数
             if($nums100>0) {
                 $money_last = bcsub($money_100, bcmul($nums100, 100), 5);
-                $transaction_result=$this->calRebateListDo($row, $nums100, 2,$money_last);
-                if($transaction_result!==true){
-                    return false;
-                }
+                $this->calRebateListDo($row, $nums100, 2,$money_last);
             }else{
                 $money_last=$money_100;
             }
             //更新用户的未排队金额
-            $transaction_result=$this->mysql->update('rebate_user',array('money_last'=>$money_last),"user_id={$row['user_id']} limit 1");
-            if($transaction_result!==true){
-                return false;
-            }
+            $this->mysql->update('rebate_user',array('money_last'=>$money_last),"user_id={$row['user_id']} limit 1");
         }
-        return true;
     }
     /*
      * $quantity:点位数量
@@ -195,17 +185,10 @@ class rebateClass extends Model
             'money_last'=>$money_last,
             'status'=>1
         );
-        $transaction_result=$this->mysql->insert('rebate_list',$rebate_list);
+        $this->mysql->insert('rebate_list',$rebate_list);
         $rebate_list['id']=$this->mysql->insert_id();
-        if($transaction_result!==true){
-            return false;
-        }
-
         //整数倍返
-        $transaction_result=$this->calRebate_Just60Return($rebate,$rebate_list);
-        if($transaction_result!==true){
-            return false;
-        }
+        $this->calRebate_Just60Return($rebate,$rebate_list);
 
         //排队奖励
         $sql="select id,rebate_id,user_id,position_quantity  from {$this->dbfix}rebate_list  where typeid={$typeid} and status=1 order by id limit 0,$to_quantity";
@@ -227,23 +210,16 @@ class rebateClass extends Model
                     'position_quantity'=>$rList['position_quantity']-$quantity_ying
                 );
             }
-            $transaction_result=$this->mysql->update('rebate_list',$arr," id={$rList['id']} limit 1");//更新剩余返还位数
-            if($transaction_result!==true){
-                return false;
-            }
+            $this->mysql->update('rebate_list',$arr," id={$rList['id']} limit 1");//更新剩余返还位数
+
             $money_all=bcmul($position_money,$quantity_ying);//500的倍数
 
             //返还给用户
-            $transaction_result=$this->rebateMoney($money_all,$rList['user_id'],'1,3,1,'.$typeid.',',array('rebate_list_in'=>$rebate_list['id'],'rebate_list_out'=>$rList['id']));
-            if($transaction_result!==true){
-                return false;
-            }
-
+            $this->rebateMoney($money_all,$rList['user_id'],'1,3,1,'.$typeid.',',array('rebate_list_in'=>$rebate_list['id'],'rebate_list_out'=>$rList['id']));
             if($to_quantity==0){
                 break;
             }
         }
-        return true;
     }
 
     //返还给用户
@@ -278,17 +254,12 @@ class rebateClass extends Model
                 $money=0;
             }
             if($rebate_log['money']>0) {
-                $transaction_result=$this->mysql->insert('rebate_log', $rebate_log);//结算日志
-                if($transaction_result!==true){
-                    return false;
-                }
+                $this->mysql->insert('rebate_log', $rebate_log);//结算日志
             }
             //更新己返还金额
             $arr_rebate['money_rebate']=$row['money_rebate']+$rebate_log['money'];
-            $transaction_result=$this->mysql->update('rebate',$arr_rebate,"id={$row['id']} limit 1");
-            if($transaction_result!==true){
-                return false;
-            }
+            $this->mysql->update('rebate',$arr_rebate,"id={$row['id']} limit 1");
+
             if($money==0){
                 break;
             }
@@ -337,17 +308,11 @@ class rebateClass extends Model
                     $rebate_log['money']=$rebate_money;
                 }
                 if($rebate_log['money']>0) {
-                    $transaction_result=$this->mysql->insert('rebate_log', $rebate_log);//结算日志
-                    if($transaction_result!==true){
-                        return false;
-                    }
+                    $this->mysql->insert('rebate_log', $rebate_log);//结算日志
                 }
                 //更新己返还金额
                 $arr_rebate['money_rebate']=$rebate_log['money'];
-                $transaction_result=$this->mysql->update('rebate',$arr_rebate,"id={$rebate['id']} limit 1");
-                if($transaction_result!==true){
-                    return false;
-                }
+                $this->mysql->update('rebate',$arr_rebate,"id={$rebate['id']} limit 1");
 
                 //减少待返位置
                 $arr = array(
@@ -356,13 +321,9 @@ class rebateClass extends Model
                 if ($arr == 0) {
                     $arr['status'] =2;
                 }
-                $transaction_result = $this->mysql->update('rebate_list', $arr, " id={$rebate_list['id']} limit 1");//更新剩余返还位数
-                if ($transaction_result !== true) {
-                    return false;
-                }
+                $this->mysql->update('rebate_list', $arr, " id={$rebate_list['id']} limit 1");//更新剩余返还位数
             }
         }
-        return true;
     }
 
     //30倍返 12队列和31队列 只判断第一个未完成的记录
@@ -387,28 +348,18 @@ class rebateClass extends Model
                         'typeid'=>"1,3,3,",
                         'addtime'=>date('Y-m-d')
                     );
-                    $transaction_result=$this->mysql->insert('rebate_log', $rebate_log);//结算日志
-                    if ($transaction_result !==true){
-                        return false;
-                    };
+                    $this->mysql->insert('rebate_log', $rebate_log);//结算日志
                     //更新己返还金额
                     $arr_rebate['status'] = 2;
                     $arr_rebate['success_time'] = date('Y-m-d');
                     $arr_rebate['money_rebate'] = $rebate['money'];
-                    $transaction_result=$this->mysql->update('rebate', $arr_rebate, "id={$rebate['id']} limit 1");
-                    if ($transaction_result !==true){
-                        return false;
-                    };
+                    $this->mysql->update('rebate', $arr_rebate, "id={$rebate['id']} limit 1");
                     //更新30倍返金额
                     $arr=array('money_30time'=>bcadd($rebate['money_30time'],$money_30,5));
-                    $transaction_result=$this->mysql->update('rebate_user', $arr, "user_id={$user_id} limit 1");
-                    if ($transaction_result !==true){
-                        return false;
-                    };
+                    $this->mysql->update('rebate_user', $arr, "user_id={$user_id} limit 1");
                 }
             }
         }
-        return true;
     }
     //分红  前天的营业额 分前天之前的 包含前天
     function calDividend($rebate_date)
@@ -461,98 +412,16 @@ class rebateClass extends Model
         if($one16_money>0){
             foreach($result16 as $row){
                 $money=bcmul($one16_money,$row['num16'],5);
-                $transaction_result=$this->rebateMoney($money,$row['user_id'],"1,2,1,",array('date'=>$rebate_date));
-                if ($transaction_result !==true){
-                    return false;
-                };
+                $this->rebateMoney($money,$row['user_id'],"1,2,1,",array('date'=>$rebate_date));
             }
         }
         //15 分红 包含31
         if($one15_money>0){
             foreach($result15 as $row){
                 $money=bcmul($one15_money,$row['num15'],5);
-                $transaction_result=$this->rebateMoney($money,$row['user_id'],"1,2,2,",array('date'=>$rebate_date));
-                if ($transaction_result !==true){
-                    return false;
-                };
+                $this->rebateMoney($money,$row['user_id'],"1,2,2,",array('date'=>$rebate_date));
             }
         }
-        /*
-        for($typeid=1;$typeid<=3;$typeid++)
-        {
-            $one16_money=0;//16队列每份分红金额
-            $one15_money=0;//15队列每份分红金额
-            if($typeid==1 || $typeid==3){
-
-            }
-            if($typeid==2 || $typeid==3){
-
-            }
-            $sql="select user_id,sum(money) from {$this->dbfix}rebate where typeid={$typeid} and status=1 and addtime<'{$day2} 23:59:59' group by user_id";
-            $result=$this->mysql->get_all($sql);
-            $nums_count1=0;//16总份数
-            $nums_count2=0;//12总分数
-            foreach($result as $k=>$row){
-                if($typeid==1 || $typeid==3){
-                    $_num=bcdiv($row['money_norebate'],$rabate1_dividend_equity);
-                    $nums_count1+=$_num;
-                    $result[$k]['nums1']=$_num;
-                }
-                if($typeid==2 || $typeid==3){
-                    $_num=bcdiv($row['money_norebate'],$rabate2_dividend_equity);
-                    $nums_count2+=$_num;
-                    $result[$k]['nums2']=$_num;
-                }
-            }
-            if($nums_count1==0 && $nums_count2==0){break;}//分红总份数
-            if($nums_count1>0){
-                $total=bcmul($totals,$rabate1_dividend_ratio,5);//分红总金额
-                $one1=bcdiv($total,$nums_count1,5);//16队列每份分红金额
-            }
-            if($nums_count2>0){
-                $total=bcmul($totals,$rabate2_dividend_ratio,5);//分红总金额
-                $one2=bcdiv($total,$nums_count2,5);//15每份分红金额
-            }
-            foreach($result as $row){
-                if($typeid==1){
-                    $money=bcmul($one1,$row['nums1'],5);
-                }elseif($typeid==2){
-                    $money=bcmul($one2,$row['nums2'],5);
-                }elseif($typeid==3){
-                    $money1=bcmul($one1,$row['nums1'],5);
-                    $money2=bcmul($one2,$row['nums2'],5);
-                    $money=bcadd($money1,$money2,5);
-                }
-                $rebate=$this->mysql->get_one("select id,money,money_rebate from {$this->dbfix}rebate where user_id={$row['user_id']} and status!=2 order by id");
-                $rebate_log=array(
-                    'user_id'=>$row['user_id'],
-                    'rebate_id'=>$rebate['id'],
-                    'typeid'=>"1,2,{$typeid},",
-                    'addtime'=>$rebate_date  //应该结算日期的
-                );
-                if($money >= $rebate['money']-$rebate['money_rebate']){
-                    $rebate_log['money']=$rebate['money']-$rebate['money_rebate'];
-                    $arr_rebate['status']=2;
-                    $arr_rebate['success_time']=$rebate_date;
-                }
-                else{
-                    $rebate_log['money']=$money;
-                }
-                if($rebate_log['money']>0) {
-                    $transaction_result=$this->mysql->insert('rebate_log', $rebate_log);//结算日志
-                    if ($transaction_result !==true){
-                        return false;
-                    };
-                }
-                //更新己返还金额
-                $arr_rebate['money_rebate']=$row['money_rebate']+$rebate_log['money'];
-                $transaction_result=$this->mysql->update('rebate',$arr_rebate,"id={$rebate['id']} limit 1");
-                if ($transaction_result !==true){
-                    return false;
-                };
-            }
-        }*/
-        return true;
     }
     //天天返 今天结算昨天的数据  参数为 今天的日期
     function calEveryDay($rebate_date)
@@ -583,17 +452,11 @@ class rebateClass extends Model
                 $rebate_log['money'] = $money;
             }
             if ($rebate_log['money'] > 0) {
-                $transaction_result=$this->mysql->insert('rebate_log', $rebate_log);//结算日志
-                if ($transaction_result !==true){
-                    return false;
-                };
+                $this->mysql->insert('rebate_log', $rebate_log);//结算日志
             }
             //更新己返还金额
             $arr_rebate['money_rebate'] = $row['money_rebate'] + $rebate_log['money'];
-            $transaction_result=$this->mysql->update('rebate', $arr_rebate, "id={$row['id']} limit 1");
-            if ($transaction_result !==true){
-                return false;
-            };
+            $this->mysql->update('rebate', $arr_rebate, "id={$row['id']} limit 1");
         }
         return true;
     }

@@ -52,6 +52,7 @@ class fbb extends Manager
             'typeid'		=>$_GET['typeid'],
             'user_id'		=>(int)$_GET['user_id'],
             'fbb_id'		=>(int)$_GET['fbb_id'],
+            'in_fbb_id'		=>(int)$_GET['in_fbb_id'],
             'money'		=>(float)$_GET['money'],
             'page'			=>(int)$_REQUEST['page'],
             'epage'			=>10

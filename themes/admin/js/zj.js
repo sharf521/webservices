@@ -47,7 +47,7 @@ function main()
         //$("#drawContent").html("");
         $.ajax({
             type: "post",
-            url: "/index.php/ajax/getFbbTree",
+            url: "/index.php/ajax/getZjTree",
             data:{id:1},
             dataType: "json",
             beforeSend: function (XMLHttpRequest) {

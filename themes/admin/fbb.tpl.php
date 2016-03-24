@@ -21,9 +21,9 @@ if($this->func=='index')
             <th>用户ID</th>
             <th>金额</th>
             <th>收入</th>
-            <th>推荐人</th>
-            <th>推荐人推荐个数</th>
-            <th>推荐人ids</th>
+            <th>上层id</th>
+            <th>上层id推荐个数</th>
+            <th>推荐关系</th>
             <th>状态</th>
             <th>添加时间</th>
         </tr>
@@ -39,7 +39,7 @@ if($this->func=='index')
                 <td><?=(float)$row['income']?></td>
                 <td><?=$row['pid']?></td>
                 <td><?=$row['position']?></td>
-                <td class="l"><?=$row['pids']?></td>
+                <td class="l"><?=str_replace(',','->',rtrim($row['pids'],','))?></td>
                 <td><?=$arr_status[$row["status"]]?></td>
                 <td><?=$row['addtime']?></td>
             </tr>
@@ -80,7 +80,7 @@ elseif($this->func=='add'||$this->func=='edit')
                         <option value="200000">200000</option>
                     </select>
                     <span></span></li>
-                <li><label>推荐人id：</label><input type="text" name="pid" value="<?=$row['pid']?>"/><span></span></li>
+                <li><label>上层id：</label><input type="text" name="pid" value="<?=$row['pid']?>"/><span></span></li>
             </ul>
             <input type="submit" class="but3" value="保存" />
             <input type="button" class="but3" value="返回" onclick="window.history.go(-1)"/>
@@ -96,15 +96,16 @@ elseif($this->func=='add'||$this->func=='edit')
         <div class="search">
             金额：<input type="text" size="10" name="money" value="<?=$_GET['money']?>">&nbsp;&nbsp;
             用户ID：<input type="text" size="10" name="user_id" value="<?=$_GET['user_id']?>">&nbsp;&nbsp;
-            FBB_ID：<input type="text" size="10" name="fbb_id" value="<?=$_GET['fbb_id']?>">&nbsp;&nbsp;
+            fbb_id：<input type="text" size="10" name="fbb_id" value="<?=$_GET['fbb_id']?>">&nbsp;&nbsp;
+            进入fbb_id：<input type="text" size="10" name="in_fbb_id" value="<?=$_GET['in_fbb_id']?>">&nbsp;&nbsp;
             <input type="submit" class="but2" value="查询" />
         </div>
     </form>
     <table class="table">
         <tr class="bt">
             <th>ID</th>
-            <th>用户ID</th>
-            <th>FBB_ID/user_id</th>
+            <th>fbb_id/用户ID</th>
+            <th>进入fbb_id/进入用户ID</th>
             <th>金额</th>
             <th>layer</th>
             <th>添加时间</th>
@@ -115,8 +116,8 @@ elseif($this->func=='add'||$this->func=='edit')
             ?>
             <tr>
                 <td><?=$row['id']?></td>
-                <td><?=$row['user_id']?></td>
-                <td><?=$row['fbb_id']?>/<?=$row['fbb_user_id']?></td>
+                <td><?=$row['fbb_id']?>/<?=$row['user_id']?></td>
+                <td><?=$row['in_user_id']?>/<?=$row['in_fbb_id']?></td>
                 <td><?=(float)$row['money']?></td>
                 <td><?=$row['layer']?></td>
                 <td><?=$row['addtime']?></td>

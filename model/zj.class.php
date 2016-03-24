@@ -34,6 +34,7 @@ class zjClass extends Model
                     'site_id' => 0,
                     'user_id' => 0,
                     'pid' => 0,
+                    'pids'=>'',
                     'money' => bcmul(800,pow(2,$plate-1)),
                     'income' => 0,
                     'plate' => $plate,
@@ -45,7 +46,11 @@ class zjClass extends Model
                 if($index==1){
                     $arr['status']=1;
                 }
-                $result = $this->mysql->insert("zj", $arr);
+                $this->mysql->insert("zj", $arr);
+                if($index==1){
+                    $id=$this->mysql->insert_id();
+                    $this->mysql->query("update {$this->dbfix}zj set pids='{$id},' where id={$id} limit 1");
+                }
             }else{
                 break;
             }
@@ -68,7 +73,6 @@ class zjClass extends Model
                 $return=array('code'=>1,'msg'=>'用户己购买！');
                 return json_encode($return);
             }*/
-
             $this->add_pre($plate);
             $row=$this->mysql->get_one("select `index` as nums from {$this->table} where plate={$plate} order by id desc limit 1");
             $arr=array(
@@ -102,35 +106,19 @@ class zjClass extends Model
         return true;
     }
     function calZj(){
-        $this->mysql->query("start transaction");
-        $transaction_result=true;
         try {
-            $transaction_result=$this->calPlate(1);
-            $transaction_result=$this->calPlate(2);
-            $transaction_result=$this->calPlate(3);
-            $transaction_result=$this->calPlate(4);
-            $transaction_result=$this->calPlate(5);
-            $transaction_result=$this->calPlate(6);
-            $transaction_result=$this->calPlate(7);
-            $transaction_result=$this->calPlate(8);
-            $transaction_result=$this->calPlate(9);
-            $transaction_result=$this->calPlate(10);
-            if($transaction_result!==true){
-                $this->mysql->query("rollback");
-                return false;
+            $this->mysql->beginTransaction();
+            for($i=0;$i<=10;$i++){
+                $this->calPlate($i);
             }
-            $transaction_result=$this->cal25DaysPlan();
-            if($transaction_result!==true){
-                $this->mysql->query("rollback");
-                return false;
-            }
-        }catch (Exception $e){
-            $this->mysql->query("rollback");
+            $this->cal25DaysPlan();
+            $this->mysql->commit();
+        } catch (Exception $e) {
+            $this->mysql->rollBack();
+            echo "Failed: " . $e->getMessage();
+            return false;
         }
-        if($transaction_result===true){
-            $this->mysql->query("commit");
-        }
-        return $transaction_result;
+        return true;
     }
 
     //25天计划
@@ -169,23 +157,14 @@ class zjClass extends Model
                             'typeid' => '3,3,',
                             'addtime' => date('Y-m-d H:i:s')
                         );
-                        $transaction_result=$this->mysql->insert('zj_log',$money_log);
-                        if ($transaction_result !==true){
-                            return false;
-                        };
-                        $transaction_result=$this->mysql->query("update {$this->dbfix}zj set income=income+{$money_log['money']},dayplan={$k} where id={$row['id']} limit 1");
-                        if ($transaction_result !==true){
-                            return false;
-                        };
+                        $this->mysql->insert('zj_log',$money_log);
+                        $this->mysql->query("update {$this->dbfix}zj set income=income+{$money_log['money']},dayplan={$k} where id={$row['id']} limit 1");
                     }
                 }
             }
             //已经过了25天
             if($today>$day){
-                $transaction_result=$this->mysql->query("update {$this->dbfix}zj set dayplan={$k} where id={$row['id']} limit 1");
-                if ($transaction_result !==true){
-                    return false;
-                };
+                $this->mysql->query("update {$this->dbfix}zj set dayplan={$k} where id={$row['id']} limit 1");
             }
         }
         return true;
@@ -200,12 +179,9 @@ class zjClass extends Model
             $arr = array(
                 'status'=>1,
                 'pid' => $_row['id'],
-                'pids' => $_row['pids'] . $_row['id'] . ','
+                'pids' => $_row['pids']  .$row['id'].','
             );
-            $transaction_result=$this->mysql->update('zj', $arr, "id={$row['id']} limit 1");
-            if ($transaction_result !==true){
-                return false;
-            };
+            $this->mysql->update('zj', $arr, "id={$row['id']} limit 1");
             //第一层奖励
             $money_log = array(
                 'user_id' =>  $_row['user_id'],
@@ -217,24 +193,19 @@ class zjClass extends Model
                 'typeid' => '3,1,',
                 'addtime' => date('Y-m-d H:i:s')
             );
-            $transaction_result=$this->mysql->insert('zj_log',$money_log);
-            if ($transaction_result !==true){
-                return false;
-            };
+            $this->mysql->insert('zj_log',$money_log);
 
             $_arr=array(
                 'childsize'=>$_row['childsize']+1,
                 'income'=>bcadd($_row['income'],$money_log['money'],5)
             );
-            $transaction_result=$this->mysql->update('zj',$_arr, "id={$_row['id']} limit 1");
-            if ($transaction_result !==true){
-                return false;
-            };
+           $this->mysql->update('zj',$_arr, "id={$_row['id']} limit 1");
 
             //滑落 上层已经够3个了 再 判断上层的上层是不是可以滑落
             if($plate<10 && $_arr['childsize']==3){
                 $arr=explode(',',trim($arr['pids'],','));
-                if(count($arr)>1){
+                if(count($arr)>2){
+                    array_pop($arr);
                     array_pop($arr);
                     $pp_id=intval(array_pop($arr));
                     $sql = "select user_id,income from {$this->dbfix}zj where id={$pp_id} and childsize=3 limit 1";
@@ -252,10 +223,8 @@ class zjClass extends Model
                                 'typeid' => '3,2,',
                                 'addtime' => date('Y-m-d H:i:s')
                             );
-                            $transaction_result=$this->mysql->insert('zj_log',$money_log);
-                            if ($transaction_result !==true){
-                                return false;
-                            };
+                            $this->mysql->insert('zj_log',$money_log);
+
                             //进入下一盘
                             $money_log2 = array(
                                 'user_id' =>  $pp_row['user_id'],
@@ -264,21 +233,16 @@ class zjClass extends Model
                                 'in_zj_id' => $row['id'],
                                 'plate' => $plate+1,
                                 'money'=>'-'.bcmul(800,pow(2,$plate+1-1)),
-                                'typeid' => '3,2,',
+                                'typeid' => '3,3,',
                                 'addtime' => date('Y-m-d H:i:s')
                             );
-                            $transaction_result=$this->mysql->insert('zj_log',$money_log2);
-                            if ($transaction_result !==true){
-                                return false;
-                            };
+                            $this->mysql->insert('zj_log',$money_log2);
+
                             $arr=array(
-                                'status'=>10,
+                                'status'=>2,
                                 'income'=>bcadd($pp_row['income'],bcadd($money_log['money'],$money_log2['money']),5)
                             );
-                            $transaction_result=$this->mysql->update('zj',$arr, "id={$pp_id} limit 1");
-                            if ($transaction_result !==true){
-                                return false;
-                            };
+                            $this->mysql->update('zj',$arr, "id={$pp_id} limit 1");
 
                             $this->add(array('user_id' =>  $pp_row['user_id'],'plate' => $plate+1));
                         }
@@ -306,18 +270,33 @@ class zjClass extends Model
         return $flag;
     }
 
-    function getFbbByPage($data)
+    function getZjByPage($data)
     {
         $_select="r.*";
         $where="where 1=1";
-        if(!empty($data['type_id']))
+        if(!empty($data['user_id']))
         {
-            $where.=" and u.type_id={$data['type_id']}";
+            $where.=" and r.user_id={$data['user_id']}";
+        }
+        if(!empty($data['money']))
+        {
+            $where.=" and r.money={$data['money']}";
+        }
+        if(!empty($data['plate']))
+        {
+            $where.=" and r.plate={$data['plate']}";
+        }
+        if(!empty($data['id']))
+        {
+            $_one=$this->mysql->one('zj',array('id'=>$data['id']));
+            $where.=" and  r.pids like '{$_one['pids']}{$_one['id']},%'";
         }
         if(!empty($data['subsite_id']))
         {
             $where.=" and u.subsite_id={$data['subsite_id']}";
         }
+
+
         $sql = "select SELECT from {$this->dbfix}zj r left join {$this->dbfix}user u on r.user_id=u.user_id {$where} ORDER LIMIT";
 
         $_order=isset($data['order'])?' order by '.$data['order']:'order by r.id desc';
@@ -349,24 +328,35 @@ class zjClass extends Model
             'page' => $pager->show()
         );
     }
-    function getFbbLogByPage($data){
-        $_select="fl.*";
+    function getZjLogByPage($data){
+        $_select="zl.*";
         $where="where 1=1";
         if(!empty($data['user_id']))
         {
-            $where.=" and fl.user_id={$data['user_id']}";
+            $where.=" and zl.user_id={$data['user_id']}";
         }
         if(!empty($data['money']))
         {
-            $where.=" and fl.money={$data['money']}";
+            $where.=" and zl.money={$data['money']}";
+        }
+        if(!empty($data['plate']))
+        {
+            $where.=" and zl.plate={$data['plate']}";
         }
         if(!empty($data['zj_id']))
         {
-            $where.=" and fl.zj_id={$data['zj_id']}";
+            $where.=" and zl.zj_id={$data['zj_id']}";
         }
-        $sql = "select SELECT from {$this->dbfix}zj_log fl {$where} ORDER LIMIT";
-
-        $_order=isset($data['order'])?' order by '.$data['order']:'order by fl.id desc';
+        if(!empty($data['in_zj_id']))
+        {
+            $where.=" and zl.in_zj_id={$data['in_zj_id']}";
+        }
+        if(!empty($data['typeid']))
+        {
+            $where.=" and zl.typeid='{$data['typeid']}'";
+        }
+        $sql = "select SELECT from {$this->dbfix}zj_log zl {$where} ORDER LIMIT";
+        $_order=isset($data['order'])?' order by '.$data['order']:'order by zl.id desc';
         //总条数
         $row=$this->mysql->get_one(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array('count(1) as num', '', ''), $sql));
         $total = $row['num'];

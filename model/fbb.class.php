@@ -31,6 +31,7 @@ class fbbClass extends Model
                 'site_id' => 1,
                 'user_id' => (int)$data['user_id'],
                 'pid' => $pid,
+                'pids'=>'',
                 'money' => (float)($data['money']),
                 'income'=>0,
                 'addtime' => date('Y-m-d H:i:s'),
@@ -41,19 +42,22 @@ class fbbClass extends Model
                 $return=array('code'=>1,'msg'=>'用户己购买！');
                 return json_encode($return);
             }
-            if($pid!=0){
-                $row=$this->mysql->one('fbb',array('user_id'=>$pid));
-                if(!$row){
-                    $return=array('code'=>2,'msg'=>'pid错误！');
+            $pids='';
+            if ($pid != 0) {
+                $row = $this->mysql->one('fbb', array('id' => $pid));
+                if (!$row) {
+                    $return = array('code' => 2, 'msg' => 'pid错误！');
                     return json_encode($return);
-                }
-                else{
-                    $arr['pids']=$row['pids'].$row['user_id'].',';
-                    $_row=$this->mysql->get_one("select count(id) as count1 from {$this->dbfix}fbb where pid={$pid}");
-                    $arr['position']=$_row['count1']+1;
+                } else {
+                    $pids = $row['pids'];
+                    $_row = $this->mysql->get_one("select count(id) as count1 from {$this->dbfix}fbb where pid={$pid}");
+                    $arr['position'] = $_row['count1'] + 1;
                 }
             }
             $result=$this->mysql->insert("fbb",$arr);
+            $id=$this->mysql->insert_id();
+            $pids=$pids.$id.',';
+            $this->mysql->query("update {$this->dbfix}fbb set pids='{$pids},' where id={$id} limit 1");
             if($result==true){
                 $return=array('code'=>200,'msg'=>'ok');
             }
@@ -63,115 +67,87 @@ class fbbClass extends Model
         }
         return json_encode($return);
     }
-    function calFbb(){
-        $sql="select id,user_id,pids,`position`,money from {$this->dbfix}fbb where status=0 order by id";
-        $result=$this->mysql->get_all($sql);
-        $this->mysql->query("start transaction");
-        $transaction_result=true;
-        try {
-            foreach ($result as $row) {
-                $transaction_result=$this->mysql->update('fbb', array('status' => 1), " id={$row['id']} limit 1");//设为己处理
-                if ($transaction_result !==true){
-                    throw new Exception();
-                };
-                $pids = rtrim($row['pids'], ',');//去除最后一个，
-                if (!empty($pids)) {
-                    $arr_pid = explode(',', $pids);
-                    $arr_pid = array_reverse($arr_pid);
-                    $arr_pos = array();//上面所有元素的位置
-                    $i = 1;
-                    foreach ($arr_pid as $pid) {
-                        $prow = $this->mysql->one('fbb', array('user_id' => $pid));
-                        $arr_pos[$i] = $prow['position'];
-                        //$money = $row['money'] < $prow['money'] ? $row['money'] : $prow['money'];
-                        $money=$row['money'];
-                        $fbb_log = array(
-                            'fbb_id' => $row['id'],
-                            'fbb_user_id' => $row['user_id'],
-                            'user_id' => $pid,
-                            'layer' => $i,
-                            'typeid' => '2,1',
-                            'addtime' => date('Y-m-d H:i:s')
-                        );
-                        if ($i == 1) {
-                            if ($row['position'] == 1) {
-                                $fbb_log['money'] = bcmul($money, 0.2, 5);//400
-                            } else {
-                                $fbb_log['money'] = bcmul($money, 0.65, 5);//1300
-                            }
-                        } elseif ($i == 2) {
-                            if ($row['position'] == 1 && $arr_pos[1] == 2) {
-                                $fbb_log['money'] = bcmul($money, 0.5, 5);//1000
-                            } else {
-                                $fbb_log['money'] = bcmul($money, 0.01, 5);//20
-                            }
-                        } else {
-                            if ($this->isFbb2_1($row['position'], $arr_pos)) {
-                                $fbb_log['money'] = bcmul($money, 0.5, 5);//1000
-                            } elseif ($this->isFbb2_2_1($row['position'], $arr_pos)) {
-                                $fbb_log['money'] = bcmul($money, 0.1, 5);//200
-                            } else {
-                                if ($i <= 5) {
-                                    $fbb_log['money'] = bcmul($money, 0.01, 5);//20
-                                } else {
-                                    $fbb_log['money'] = bcmul($money, 0.005, 5);//10
-                                }
-                            }
-                        }
-                        /*  switch($i){
 
-                              case 3:
-                                  if($row['position']==1 && $arr_pos[1]==1 && $arr_pos[2]==2){
-                                      $fbb_log['money']=bcmul($money,0.5,5);//1000
-                                  }
-                                  elseif($row['position']==1 && $arr_pos[1]==2 && $arr_pos[2]==2){
-                                      $fbb_log['money']=bcmul($money,0.1,5);//200
-                                  }
-                                  else{
-                                      $fbb_log['money']=bcmul($money,0.01,5);//20
-                                  }
-                                  break;
-                              case 4:
-                                  if($row['position']==1 && $arr_pos[1]==1 && $arr_pos[2]==1 && $arr_pos[3]==2){
-                                      $fbb_log['money']=bcmul($money,0.5,5);//1000
-                                  }
-                                  elseif($row['position']==1 && $arr_pos[1]==1 && $arr_pos[2]==2 && $arr_pos[3]==2){
-                                      $fbb_log['money']=bcmul($money,0.1,5);//200
-                                  }
-                                  else{
-                                      $fbb_log['money']=bcmul($money,0.01,5);//20
-                                  }
-                                  break;
-                          }*/
-                        if ($fbb_log['money'] != 0) {
-                            //更新收入
-                            $transaction_result=$this->mysql->update('fbb', array('income' =>bcadd($fbb_log['money'],$prow['income'],5)), " id={$prow['id']} limit 1");
-                            if ($transaction_result !==true){
-                                throw new Exception();
-                            };
-                            $transaction_result=$this->mysql->insert('fbb_log', $fbb_log);
-                            if ($transaction_result !==true){
-                                throw new Exception();
-                            };
+    function calFbb()
+    {
+        try {
+            $this->mysql->beginTransaction();
+            $this->calFbbDo();
+            $this->mysql->commit();
+        } catch (Exception $e) {
+            $this->mysql->rollBack();
+            echo "Failed: " . $e->getMessage();
+            return false;
+        }
+        return true;
+    }
+    private function calFbbDo()
+    {
+        $sql = "select id,user_id,pids,`position`,money from {$this->dbfix}fbb where status=0 order by id";
+        $result = $this->mysql->get_all($sql);
+        foreach ($result as $row) {
+            $this->mysql->update('fbb', array('status' => 1), " id={$row['id']} limit 1");//设为己处理
+            $pids = rtrim($row['pids'], ',');//去除最后一个，
+            if (!empty($pids)) {
+                $arr_pid = explode(',', $pids);
+                array_pop($arr_pid);
+                $arr_pid = array_reverse($arr_pid);
+                $arr_pos = array();//上面所有元素的位置
+                $i = 1;
+                foreach ($arr_pid as $pid) {
+                    $prow = $this->mysql->one('fbb', array('id' => $pid));
+                    $arr_pos[$i] = $prow['position'];
+                    //$money = $row['money'] < $prow['money'] ? $row['money'] : $prow['money'];
+                    $money = $row['money'];
+                    $fbb_log = array(
+                        'user_id' => $prow['user_id'],
+                        'fbb_id' => $prow['id'],
+                        'in_fbb_id' => $row['id'],
+                        'in_user_id' => $row['user_id'],
+                        'layer' => $i,
+                        'typeid' => '2,1',
+                        'addtime' => date('Y-m-d H:i:s')
+                    );
+                    if ($i == 1) {
+                        if ($row['position'] == 1) {
+                            $fbb_log['money'] = bcmul($money, 0.2, 5);//400
+                        } else {
+                            $fbb_log['money'] = bcmul($money, 0.65, 5);//1300
                         }
-                        if ($i >= 15) {
-                            break;
+                    } elseif ($i == 2) {
+                        if ($row['position'] == 1 && $arr_pos[1] == 2) {
+                            $fbb_log['money'] = bcmul($money, 0.5, 5);//1000
+                        } else {
+                            $fbb_log['money'] = bcmul($money, 0.01, 5);//20
                         }
-                        $i++;
+                    } else {
+                        if ($this->isFbb2_1($row['position'], $arr_pos)) {
+                            $fbb_log['money'] = bcmul($money, 0.5, 5);//1000
+                        } elseif ($this->isFbb2_2_1($row['position'], $arr_pos)) {
+                            $fbb_log['money'] = bcmul($money, 0.1, 5);//200
+                        } else {
+                            if ($i <= 5) {
+                                $fbb_log['money'] = bcmul($money, 0.01, 5);//20
+                            } else {
+                                $fbb_log['money'] = bcmul($money, 0.005, 5);//10
+                            }
+                        }
                     }
+                    if ($fbb_log['money'] != 0) {
+                        $this->mysql->update('fbb', array('income' => bcadd($fbb_log['money'], $prow['income'], 5)), " id={$prow['id']} limit 1");
+                        $this->mysql->insert('fbb_log', $fbb_log);
+                    }
+                    if ($i >= 15) {
+                        break;
+                    }
+                    $i++;
                 }
             }
-        }catch (Exception $e){
-            $this->mysql->query("rollback");
         }
-        if($transaction_result===true){
-            $this->mysql->query("commit");
-        }else{
-            $this->mysql->query("rollback");
-        }
-        return $transaction_result;
     }
-    function isFbb2_1($my_pos,$arr_pos){
+
+
+    private function isFbb2_1($my_pos,$arr_pos){
         if($my_pos!=1) return false;//当前位置必须是上级的第一个推荐
         array_pop($arr_pos);//删除最后一个元素
         $last1=array_pop($arr_pos);//删除最后一个元素，返回最后一个
@@ -187,7 +163,7 @@ class fbbClass extends Model
         }
         return false;
     }
-    function isFbb2_2_1($my_pos,$arr_pos){
+    private function isFbb2_2_1($my_pos,$arr_pos){
         if($my_pos!=1) return false;
         array_pop($arr_pos);//删除最后一个元素
         $last1=array_pop($arr_pos);//删除最后一个元素
@@ -204,6 +180,8 @@ class fbbClass extends Model
         }
         return false;
     }
+
+    ///////////////////////////////////////////////////
     function getFbbByPage($data)
     {
         $_select="r.*";
@@ -261,6 +239,10 @@ class fbbClass extends Model
         if(!empty($data['fbb_id']))
         {
             $where.=" and fl.fbb_id={$data['fbb_id']}";
+        }
+        if(!empty($data['in_fbb_id']))
+        {
+            $where.=" and fl.in_fbb_id={$data['in_fbb_id']}";
         }
         $sql = "select SELECT from {$this->dbfix}fbb_log fl {$where} ORDER LIMIT";
 
