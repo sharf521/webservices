@@ -11,7 +11,6 @@ if($this->func=='index')
 
     <form method="get">
         <div class="search">
-            金额：<input type="text" size="10" name="money" value="<?=$_GET['money']?>">&nbsp;&nbsp;
             用户ID：<input type="text" size="10" name="user_id" value="<?=$_GET['user_id']?>">&nbsp;&nbsp;
             增进ID：<input type="text" size="10" name="id" value="<?=$_GET['id']?>">&nbsp;&nbsp;
             盘数：<input type="text" size="10" name="plate" value="<?=$_GET['plate']?>">&nbsp;&nbsp;
@@ -54,16 +53,25 @@ if($this->func=='index')
         <? }?>
     </table>
     <? if(empty($result['total'])){echo "无记录！";}else{echo $result['page'];}?>
-    <script>
-        mxBasePath = '/themes/admin/js/mxgraph/src';
-    </script>
-    <script src="/themes/admin/js/mxgraph/src/js/mxClient.js"></script>
-    <script src="/themes/admin/js/zj.js"></script>
-    <script>
-        $(document).ready(function (){
-            main();
-        });
-    </script>
+
+    <?
+    if ($_GET) {
+        ?>
+        <script>
+            mxBasePath = '/themes/admin/js/mxgraph/src';
+        </script>
+        <script src="/themes/admin/js/mxgraph/src/js/mxClient.js"></script>
+        <script src="/themes/admin/js/zj.js"></script>
+        <script>
+            $(document).ready(function () {
+                main(<?=(int)$_GET['user_id']?>, <?=(int)$_GET['id']?>, <?=(int)$_GET['plate']?>);
+            });
+        </script>
+    <?
+    }
+    ?>
+
+
     <div><div class="drawContent" id="drawContent"></div></div>
 
 <?

@@ -186,13 +186,18 @@ class fbbClass extends Model
     {
         $_select="r.*";
         $where="where 1=1";
-        if(!empty($data['type_id']))
+        if(!empty($data['user_id']))
         {
-            $where.=" and u.type_id={$data['type_id']}";
+            $where.=" and r.user_id={$data['user_id']}";
         }
-        if(!empty($data['subsite_id']))
+        if(!empty($data['money']))
         {
-            $where.=" and u.subsite_id={$data['subsite_id']}";
+            $where.=" and r.money={$data['money']}";
+        }
+        if(!empty($data['id']))
+        {
+            $_one=$this->mysql->one('fbb',array('id'=>$data['id']));
+            $where.=" and  r.pids like '{$_one['pids']}%'";
         }
         $sql = "select SELECT from {$this->dbfix}fbb r left join {$this->dbfix}user u on r.user_id=u.user_id {$where} ORDER LIMIT";
 

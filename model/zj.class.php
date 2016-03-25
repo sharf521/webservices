@@ -289,7 +289,7 @@ class zjClass extends Model
         if(!empty($data['id']))
         {
             $_one=$this->mysql->one('zj',array('id'=>$data['id']));
-            $where.=" and  r.pids like '{$_one['pids']}{$_one['id']},%'";
+            $where.=" and  r.pids like '{$_one['pids']}%'";
         }
         if(!empty($data['subsite_id']))
         {

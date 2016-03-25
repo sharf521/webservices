@@ -38,7 +38,7 @@ mxGraphView.prototype.updateFloatingTerminalPoint = function (edge, start, end, 
     }
     edge.setAbsoluteTerminalPoint(pt, source);
 };
-function main()
+function main(user_id,id,money)
 {
     if (!mxClient.isBrowserSupported()) {
         mxUtils.error('浏览器不支持!', 200, false);
@@ -48,7 +48,7 @@ function main()
         $.ajax({
             type: "post",
             url: "/index.php/ajax/getFbbTree",
-            data:{id:1},
+            data:{user_id:user_id,id:id,money:money},
             dataType: "json",
             beforeSend: function (XMLHttpRequest) {
                 //setPromptPanelVisible();

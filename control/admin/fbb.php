@@ -10,6 +10,8 @@ class fbb extends Manager
     {
         $arr=array(
             'user_id'		=>(int)$_GET['user_id'],
+            'id'		=>(int)$_GET['id'],
+            'money'		=>(float)$_GET['money'],
             'page'			=>(int)$_REQUEST['page'],
             'epage'			=>10
         );

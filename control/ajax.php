@@ -4,6 +4,7 @@ class ajax extends Control
 {
     function getFbbTree()
     {
+/*
         $id=intval($_REQUEST['id']);
         if($id!=0){
             //$row=$this->mysql->one('fbb',array('id'=>$id));
@@ -20,11 +21,25 @@ class ajax extends Control
 
         $first_row=$this->mysql->one('fbb',array('id'=>$first_userid));
         $path=$first_row['pids'];
+*/
+        $data=$_REQUEST;
+        $where="where 1=1";
+        if(!empty($data['user_id']))
+        {
+            $where.=" and user_id={$data['user_id']}";
+        }
+        if(!empty($data['money']))
+        {
+            $where.=" and money={$data['money']}";
+        }
+        if(!empty($data['id']))
+        {
+            $_one=$this->mysql->one('fbb',array('id'=>$data['id']));
+            $where.=" and  pids like '{$_one['pids']}%'";
+        }
 
-       // $sql="select id,user_id,money,pid,addtime from {$this->dbfix}fbb where status=1 and user_id in($str) order by id";
-        //$result=$this->mysql->get_all($sql);
-
-        $sql="select id,user_id,money,pid,addtime from {$this->dbfix}fbb where status=1 and pids like '{$path}%' order by id";
+        //$sql="select id,user_id,money,pid,addtime from {$this->dbfix}fbb where status=1 and pids like '{$path}%' order by id";
+        $sql="select id,user_id,money,pid,addtime from {$this->dbfix}fbb {$where} order by id";
         $result2=$this->mysql->get_all($sql);
        // echo json_encode(array_merge($result,$result2));
         echo json_encode($result2);
@@ -62,6 +77,7 @@ class ajax extends Control
     }
     function getZjTree()
     {
+        $data=$_REQUEST;
         $row=$this->mysql->get_one("select * from {$this->dbfix}zj order by id limit 1");
         if(empty($row)){
             echo 'no user';
@@ -76,7 +92,25 @@ class ajax extends Control
         $path=$first_row['pids'];
 
 
-        $sql="select id,user_id,money,pid,addtime from {$this->dbfix}zj where status!=0 and pids like '{$path}%' order by id";
+
+        $where="where 1=1";
+        if(!empty($data['user_id']))
+        {
+            $where.=" and user_id={$data['user_id']}";
+        }
+        if(!empty($data['plate']))
+        {
+            $where.=" and plate={$data['plate']}";
+        }
+        if(!empty($data['id']))
+        {
+            $_one=$this->mysql->one('zj',array('id'=>$data['id']));
+            $where.=" and  pids like '{$_one['pids']}%'";
+        }
+
+
+        //$sql="select id,user_id,money,pid,addtime from {$this->dbfix}zj where pids like '{$path}%' order by id";
+        $sql="select id,user_id,money,pid,addtime from {$this->dbfix}zj {$where} order by id";
         $result2=$this->mysql->get_all($sql);
         //print_r($result2);
         echo json_encode($result2);

@@ -38,7 +38,7 @@ mxGraphView.prototype.updateFloatingTerminalPoint = function (edge, start, end, 
     }
     edge.setAbsoluteTerminalPoint(pt, source);
 };
-function main()
+function main(user_id,id,plate)
 {
     if (!mxClient.isBrowserSupported()) {
         mxUtils.error('浏览器不支持!', 200, false);
@@ -48,7 +48,7 @@ function main()
         $.ajax({
             type: "post",
             url: "/index.php/ajax/getZjTree",
-            data:{id:1},
+            data:{user_id:user_id,id:id,plate:plate},
             dataType: "json",
             beforeSend: function (XMLHttpRequest) {
                 //setPromptPanelVisible();
@@ -135,10 +135,10 @@ function main()
                     for (var i = 0; i < data.length; i++) {
 
                         if (i == 0) {
-                            var vNode = graph.insertVertex(parent,0, 'user_id:'+data[i]['user_id']+'\r\n￥'+parseFloat(data[i]['money'])+'('+data[i]['id']+')', w / 3 - 30, 20, 60, 40);
+                            var vNode = graph.insertVertex(parent,0, data[i]['id']+'\r\n user_id:'+data[i]['user_id'], w / 3 - 30, 20, 60, 40);
                             node[data[i]['id']] = vNode;
                         } else {
-                            vNode = graph.insertVertex(parent, 0, 'user_id:'+data[i]['user_id']+'\r\n￥'+parseFloat(data[i]['money'])+'('+data[i]['id']+')', 0, 0, 60, 40);
+                            vNode = graph.insertVertex(parent, 0, data[i]['id']+'\r\n user_id:'+data[i]['user_id'], 0, 0, 60, 40);
                             node[data[i]['id']] = vNode;
                         }
 
