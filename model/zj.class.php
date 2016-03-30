@@ -41,6 +41,8 @@ class zjClass extends Model
                     'index'=>$index,
                     'addtime' => date('Y-m-d H:i:s'),
                     'dayplan'=>0,
+                    'dayplan_income'=>0,
+                    'dayplan_last'=>0,
                     'status'=>0
                 );
                 if($index==1){
@@ -85,6 +87,8 @@ class zjClass extends Model
                 'plate'=>$plate,
                 'addtime' => date('Y-m-d H:i:s'),
                 'dayplan'=>0,
+                'dayplan_income'=>0,
+                'dayplan_last'=>0,
                 'status' => 0
             );
             $result=$this->mysql->insert("zj",$arr);
@@ -98,9 +102,9 @@ class zjClass extends Model
     }
     function calAdd1000()
     {
-        $this->mysql->query('TRUNCATE TABLE  `plf_zj`');
-        $this->mysql->query('TRUNCATE TABLE  `plf_zj_log`');
-        for($i=1;$i<=50;$i++){
+        //$this->mysql->query('TRUNCATE TABLE  `plf_zj`');
+        //$this->mysql->query('TRUNCATE TABLE  `plf_zj_log`');
+        for($i=1;$i<=10;$i++){
             $this->add(array('user_id'=>$i,'plate'=>1));
         }
         return true;
@@ -129,42 +133,37 @@ class zjClass extends Model
         $result = $this->mysql->get_all($sql);
         foreach ($result as $row) {
             $date = substr($row['addtime'], 0, 10);
-            $child = $this->mysql->get_one("select addtime from {$this->dbfix}zj where pid={$row['id']} order by id limit 1");
-            if($child){
-                $childDay=substr($child['addtime'],0,10);
+            $child = $this->mysql->get_one("select count(id) as child_count from {$this->dbfix}zj where pid={$row['id']} order by id limit 1");
+            if($child['child_count']>0 || $today>date('Y-m-d', strtotime($date) + 3600 * 24 * 25)){
+                $this->mysql->query("update {$this->dbfix}zj set dayplan=25 where id={$row['id']} limit 1");
             }else{
-                $childDay='2200-01-01';
-            }
-            $arr_days=array(
-                3=>150,
-                5=>50,
-                10=>50,
-                15=>50,
-                20=>50,
-                25=>150,
-            );
-            foreach($arr_days as $k=>$v){
-                if($k > $row['dayplan']){
-                    $day = date('Y-m-d', strtotime($date) + 3600 * 24 * $k);
-                    if($day < $today && $day < $childDay){
-                        $money_log = array(
-                            'user_id' =>  $row['user_id'],
-                            'zj_id' => $row['id'],
-                            'in_user_id' => 0,
-                            'in_zj_id' => 0,
-                            'plate' => $row['plate'],
-                            'money'=>bcmul($v,pow(2,$row['plate']-1)),
-                            'typeid' => '3,3,',
-                            'addtime' => date('Y-m-d H:i:s')
-                        );
-                        $this->mysql->insert('zj_log',$money_log);
-                        $this->mysql->query("update {$this->dbfix}zj set income=income+{$money_log['money']},dayplan={$k} where id={$row['id']} limit 1");
+                $arr_days=array(
+                    3=>150,
+                    5=>50,
+                    10=>50,
+                    15=>50,
+                    20=>50,
+                    25=>150,
+                );
+                foreach($arr_days as $k=>$v){
+                    if($k > $row['dayplan']){
+                        $day = date('Y-m-d', strtotime($date) + 3600 * 24 * $k);
+                        if($day < $today){
+                            $money_log = array(
+                                'user_id' =>  $row['user_id'],
+                                'zj_id' => $row['id'],
+                                'in_user_id' => 0,
+                                'in_zj_id' => 0,
+                                'plate' => $row['plate'],
+                                'money'=>bcmul($v,pow(2,$row['plate']-1)),
+                                'typeid' => '3,4,',
+                                'addtime' => date('Y-m-d H:i:s')
+                            );
+                            $this->mysql->insert('zj_log',$money_log);
+                            $this->mysql->query("update {$this->dbfix}zj set income=income+{$money_log['money']},dayplan={$k},dayplan_income=dayplan_income+{$money_log['money']},dayplan_last=dayplan_last+{$money_log['money']} where id={$row['id']} limit 1");
+                        }
                     }
                 }
-            }
-            //已经过了25天
-            if($today>$day){
-                $this->mysql->query("update {$this->dbfix}zj set dayplan={$k} where id={$row['id']} limit 1");
             }
         }
         return true;
@@ -174,7 +173,7 @@ class zjClass extends Model
         $sql = "select id,user_id from {$this->dbfix}zj where status=0 and plate={$plate} order by id";//每一盘的第一个跳过
         $result = $this->mysql->get_all($sql);
         foreach ($result as $row) {
-            $sql = "select id,user_id,pids,childsize,income from {$this->dbfix}zj where plate={$plate} and childsize!=3 order by id limit 1";
+            $sql = "select id,user_id,pids,childsize,income,dayplan_last from {$this->dbfix}zj where plate={$plate} and childsize!=3 order by id limit 1";
             $_row = $this->mysql->get_one($sql);
             $arr = array(
                 'status'=>1,
@@ -182,24 +181,37 @@ class zjClass extends Model
                 'pids' => $_row['pids']  .$row['id'].','
             );
             $this->mysql->update('zj', $arr, "id={$row['id']} limit 1");
-            //第一层奖励
-            $money_log = array(
-                'user_id' =>  $_row['user_id'],
-                'zj_id' => $_row['id'],
-                'in_user_id' => $row['user_id'],
-                'in_zj_id' => $row['id'],
-                'plate' => $plate,
-                'money'=>bcmul(300,pow(2,$plate-1)),
-                'typeid' => '3,1,',
-                'addtime' => date('Y-m-d H:i:s')
-            );
-            $this->mysql->insert('zj_log',$money_log);
 
-            $_arr=array(
-                'childsize'=>$_row['childsize']+1,
-                'income'=>bcadd($_row['income'],$money_log['money'],5)
-            );
-           $this->mysql->update('zj',$_arr, "id={$_row['id']} limit 1");
+            $dayplan_last=$_row['dayplan_last'];
+            $t1_money=bcmul(300,pow(2,$plate-1));
+            if($dayplan_last > $t1_money){
+                $_arr=array(
+                    'childsize'=>$_row['childsize']+1,
+                    'dayplan_last'=>$dayplan_last-$t1_money
+                );
+                $this->mysql->update('zj',$_arr, "id={$_row['id']} limit 1");
+            }else{
+                $money=$t1_money - $dayplan_last;
+                //第一层奖励
+                $money_log = array(
+                    'user_id' =>  $_row['user_id'],
+                    'zj_id' => $_row['id'],
+                    'in_user_id' => $row['user_id'],
+                    'in_zj_id' => $row['id'],
+                    'plate' => $plate,
+                    'money'=>$money,
+                    'typeid' => '3,1,',
+                    'addtime' => date('Y-m-d H:i:s')
+                );
+                $this->mysql->insert('zj_log',$money_log);
+
+                $_arr=array(
+                    'childsize'=>$_row['childsize']+1,
+                    'income'=>bcadd($_row['income'],$money_log['money'],5),
+                    'dayplan_last'=>0
+                );
+                $this->mysql->update('zj',$_arr, "id={$_row['id']} limit 1");
+            }
 
             //滑落 上层已经够3个了 再 判断上层的上层是不是可以滑落
             if($plate<10 && $_arr['childsize']==3){

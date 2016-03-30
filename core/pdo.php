@@ -27,8 +27,11 @@ class Db
      * @param string $config_name
      * @throws \Exception
      */
-    public static function instance($config_name)
+    public static function instance($config_name=null)
     {
+        if($config_name==null){
+            $config_name='db1';
+        }
         if (!isset(Config::$$config_name)) {
             echo "Config::$config_name not set\n";
             throw new \Exception("Config::$config_name not set\n");
@@ -40,7 +43,17 @@ class Db
         }
         return self::$instance[$config_name];
     }
-
+/////////////////////////////////////////////
+    public static function table($table, $connection = null)
+    {
+        return static::instance($connection)->table($table);
+    }
+    /*
+    public static function __callStatic($method, $parameters)
+    {
+        return call_user_func_array([static::connection(), $method], $parameters);
+    }*/
+///////////////////////////////////////
     /**
      * 关闭数据库实例
      * @param string $config_name
@@ -69,7 +82,7 @@ class DbConnection
 {
     protected $pdo;
     protected $dbfix;
-
+    protected $sQuery;
     public function __construct($host, $port, $user, $password, $db_name, $charset = 'utf8', $dbfix = '')
     {
         $this->settings = array(
@@ -108,9 +121,10 @@ class DbConnection
         $this->pdo = null;
     }
 
-    function query($sql)
+    function query($sql,$param=array())
     {
-        $result = $this->pdo->exec($sql);
+        //$result = $this->pdo->exec($sql);
+        $result=$this->execute($sql,$param);
         return $result;
     }
 
@@ -121,16 +135,16 @@ class DbConnection
         return $rs;
     }
 
-    public function get_one($sql)
+    public function get_one($sql,$param=array())
     {
-        $rs = $this->select($sql);
+        $rs = $this->execute($sql,$param);
         $result = $rs->fetch();
         return $result;
     }
 
-    public function get_all($sql)
+    public function get_all($sql,$param=array())
     {
-        $rs = $this->select($sql);
+        $rs = $this->execute($sql,$param);
         $result = $rs->fetchAll();
         return $result;
     }
@@ -260,6 +274,52 @@ class DbConnection
     {
         $this->closeConnection();
     }
+
+
+    //////////////////////////////////////
+
+
+
+
+    public function table($table)
+    {
+        return $this->get_all("select * from {$table} limit 10");
+    }
+
+    public function query1($sql,$params=array())
+    {
+        $this->execute1($sql, $params);
+        $rawStatement = explode(" ", $sql);
+        $statement = strtolower(trim($rawStatement[0]));
+        if ($statement === 'select' || $statement === 'show') {
+            return $this->sQuery->fetchAll(\PDO::FETCH_ASSOC);
+        } elseif ($statement === 'update' || $statement === 'delete') {
+            return $this->sQuery->rowCount();
+        } elseif ($statement === 'insert') {
+            if ($this->sQuery->rowCount() > 0) {
+                return $this->pdo->lastInsertId();
+            }
+        } else {
+            return NULL;
+        }
+    }
+    protected function execute($query,$params =array())
+    {
+        $this->sQuery = $this->pdo->prepare($query);
+        if(!empty($params) && is_array($params)) {
+           foreach($params as $k=>&$v){
+               if(is_string($k)){
+                   $this->sQuery->bindParam(':'.$k, $v);
+               }else{
+                   $this->sQuery->bindParam($k+1, $v);
+               }
+           }
+        }
+        $this->sQuery->execute();
+        $this->sQuery->setFetchMode(\PDO::FETCH_ASSOC);
+        return $this->sQuery;
+    }
+
 }
 
 /*

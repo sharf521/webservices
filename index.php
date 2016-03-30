@@ -16,6 +16,11 @@ $pager=new Page();
 //$mysql = new Mysql($db_config);
 require 'core/pdo.php';
 $mysql = Db::instance('db1');
+//$aa=Db::table('plf_fbb');
+
+//$aa=$mysql->query1("select * from plf_fbb where id =:id limit 10",array('id'=>1));
+//$aa=$mysql->query1("insert into  uc_vars(name,value)values(?,?)",array('555','sdf'));
+//print_r($aa);
 
 require 'core/Controller.php';
 $_G['class']=($uriClass->get(0)!='')?$uriClass->get(0):'index';

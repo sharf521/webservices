@@ -6,7 +6,7 @@ if($this->func=='index')
     <div class="main_title">
         <span>增进管理</span>列表<?=$this->anchor('zj/add','新增','class="but1"');?>
         <?=$this->anchor('zj/calZj','计算','class="but1"')?>
-        <?=$this->anchor('zj/calAdd1000','添加1000个','class="but1"')?>
+        <?=$this->anchor('zj/calAdd1000','添加10个','class="but1"')?>
     </div>
 
     <form method="get">
@@ -26,8 +26,10 @@ if($this->func=='index')
             <th>上层id</th>
             <th>路径</th>
             <th>盘数</th>
-            <th>盘数位置</th>
+            <th>位置</th>
             <th>25天计划</th>
+            <th>25天发放</th>
+            <th>提前发放</th>
             <th>状态</th>
             <th>添加时间</th>
         </tr>
@@ -47,6 +49,8 @@ if($this->func=='index')
                 <td><?=$row['plate']?></td>
                 <td><?=$row['index']?></td>
                 <td><?=$row['dayplan']?></td>
+                <td>￥<?=(float)$row['dayplan_income']?></td>
+                <td>￥<?=(float)$row['dayplan_last']?></td>
                 <td><?=$arr_status[$row["status"]]?></td>
                 <td><?=$row['addtime']?></td>
             </tr>
@@ -55,7 +59,7 @@ if($this->func=='index')
     <? if(empty($result['total'])){echo "无记录！";}else{echo $result['page'];}?>
 
     <?
-    if ($_GET) {
+    if ((int)$_GET['plate']>0) {
         ?>
         <script>
             mxBasePath = '/themes/admin/js/mxgraph/src';
@@ -99,6 +103,7 @@ elseif($this->func=='add'||$this->func=='edit')
         '3,1,'=>'T1',
         '3,2,'=>'T2',
         '3,3,'=>'滑落',
+        '3,4,'=>'25天计划',
     );
     ?>
     <div class="main_title">

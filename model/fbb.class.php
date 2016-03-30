@@ -57,7 +57,7 @@ class fbbClass extends Model
             $result=$this->mysql->insert("fbb",$arr);
             $id=$this->mysql->insert_id();
             $pids=$pids.$id.',';
-            $this->mysql->query("update {$this->dbfix}fbb set pids='{$pids},' where id={$id} limit 1");
+            $this->mysql->query("update {$this->dbfix}fbb set pids='{$pids}' where id={$id} limit 1");
             if($result==true){
                 $return=array('code'=>200,'msg'=>'ok');
             }
@@ -101,6 +101,7 @@ class fbbClass extends Model
                     $money = $row['money'];
                     $fbb_log = array(
                         'user_id' => $prow['user_id'],
+                        'money'=>0,
                         'fbb_id' => $prow['id'],
                         'in_fbb_id' => $row['id'],
                         'in_user_id' => $row['user_id'],
@@ -115,10 +116,10 @@ class fbbClass extends Model
                             $fbb_log['money'] = bcmul($money, 0.65, 5);//1300
                         }
                     } elseif ($i == 2) {
-                        if ($row['position'] == 1 && $arr_pos[1] == 2) {
+                        if ($row['position'] == 1 && $arr_pos[1] >= 2) {
                             $fbb_log['money'] = bcmul($money, 0.5, 5);//1000
                         } else {
-                            $fbb_log['money'] = bcmul($money, 0.01, 5);//20
+                           // $fbb_log['money'] = bcmul($money, 0.01, 5);//20
                         }
                     } else {
                         if ($this->isFbb2_1($row['position'], $arr_pos)) {
@@ -126,17 +127,22 @@ class fbbClass extends Model
                         } elseif ($this->isFbb2_2_1($row['position'], $arr_pos)) {
                             $fbb_log['money'] = bcmul($money, 0.1, 5);//200
                         } else {
-                            if ($i <= 5) {
-                                $fbb_log['money'] = bcmul($money, 0.01, 5);//20
-                            } else {
-                                $fbb_log['money'] = bcmul($money, 0.005, 5);//10
-                            }
+                            //$fbb_log['money']=0;
                         }
                     }
                     if ($fbb_log['money'] != 0) {
                         $this->mysql->update('fbb', array('income' => bcadd($fbb_log['money'], $prow['income'], 5)), " id={$prow['id']} limit 1");
                         $this->mysql->insert('fbb_log', $fbb_log);
                     }
+                    //见点给
+                    if ($i <= 5) {
+                        $fbb_log['money'] = bcmul($money, 0.01, 5);//20
+                    } else {
+                        $fbb_log['money'] = bcmul($money, 0.005, 5);//10
+                    }
+                    $this->mysql->query("update {$this->dbfix}fbb set income=income+{$fbb_log['money']} where id={$prow['id']} limit 1");
+                    $this->mysql->insert('fbb_log', $fbb_log);
+
                     if ($i >= 15) {
                         break;
                     }
@@ -158,7 +164,7 @@ class fbbClass extends Model
                 break;
             }
         }
-        if($return && $last1==2){
+        if($return && $last1>=2){
             return true;
         }
         return false;
@@ -175,7 +181,7 @@ class fbbClass extends Model
                 break;
             }
         }
-        if($return && $last2==2 && $last1==2){
+        if($return && $last2==2 && $last1>=2){
             return true;
         }
         return false;

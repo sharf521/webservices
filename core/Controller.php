@@ -92,7 +92,6 @@ class Control
 		global $mysql,$dbfix,$uriClass;
 		$this->mysql=$mysql;
 		$this->dbfix=$dbfix;
-		
 		$this->uri=$uriClass;
 		$this->base_url='/index.php/';
 		/*

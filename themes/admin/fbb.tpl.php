@@ -29,7 +29,7 @@ if($this->func=='index')
             <th>添加时间</th>
         </tr>
         <?
-        $arr_status=array('未结算','己结算');
+        $arr_status=array('未计算','己计算');
         foreach($result['list'] as $row)
         {
             ?>
@@ -49,7 +49,7 @@ if($this->func=='index')
     <? if(empty($result['total'])){echo "无记录！";}else{echo $result['page'];}?>
 
     <?
-    if ($_GET) {
+    if ((int)$_GET['id']>0) {
         ?>
         <script>
             mxBasePath = '/themes/admin/js/mxgraph/src';
