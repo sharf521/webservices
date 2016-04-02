@@ -84,6 +84,7 @@ class rebateClass extends Model
                 $this->calEveryDay($rebate_date);
                 $this->calDividend($rebate_date);
                 $this->calRebateList($rebate_date);
+                $this->calRebate_30TimesReturn($rebate_date);
                 $this->mysql->commit();
             } catch (Exception $e) {
                 $this->mysql->rollBack();
@@ -333,16 +334,16 @@ class rebateClass extends Model
     }
 
     //30倍返 12队列和31队列 只判断第一个未完成的记录
-    function calRebate_30TimesReturn()
+    function calRebate_30TimesReturn($rebate_date)
     {
-        $day1=date('Y-m-d',time()-3600*24*1);
-        $sql="select user_id,sum(money-money_rebate) as money_norebate from {$this->dbfix}rebate  where typeid!=1 and status=1 and addtime<'{$day1} 23:59:59' group by user_id order by null";
+        //$day1=date('Y-m-d',time()-3600*24*1);
+        $sql="select user_id,sum(money-money_rebate) as money_norebate from {$this->dbfix}rebate  where typeid!=1 and status=1 and addtime<'{$rebate_date}' group by user_id order by null";
         $result=$this->mysql->get_all($sql);
         foreach($result as $row){
             $user_id=$row['user_id'];
             $money_norebate=floatval($row['money_norebate']);
             $sql="select u.money_30time,r.id,r.money,r.money_rebate from {$this->dbfix}rebate_user u left join {$this->dbfix}rebate r on u.user_id=r.user_id
-                  where r.typeid!=1 and r.status=1 and r.user_id={$user_id} order by r.id limit 1";
+                  where r.typeid!=1 and r.status=1 and r.user_id={$user_id} and r.addtime<'{$rebate_date}' order by r.id limit 1";
             $rebate=$this->mysql->get_one($sql);
             if($rebate){
                 $money_30=bcmul($rebate['money'],30,5);
@@ -478,6 +479,14 @@ class rebateClass extends Model
         {
             $where.=" and r.typeid={$data['typeid']}";
         }
+        if(!empty($data['startdate']))
+        {
+            $where.=" and r.addtime>='{$data['startdate']}'";
+        }
+        if(!empty($data['enddate']))
+        {
+            $where.=" and r.addtime<'{$data['enddate']}'";
+        }
         if(!empty($data['user_id']))
         {
             $where.=" and r.user_id={$data['user_id']}";
@@ -490,8 +499,9 @@ class rebateClass extends Model
 
         $_order=isset($data['order'])?' order by '.$data['order']:'order by r.id desc';
         //总条数
-        $row=$this->mysql->get_one(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array('count(1) as num', '', ''), $sql));
+        $row=$this->mysql->get_one(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array('count(1) as num,sum(money) as moneys', '', ''), $sql));
         $total = $row['num'];
+        $moneys=$row['moneys'];
 
         $epage = empty($data['epage'])?10:$data['epage'];
         $page=$data['page'];
@@ -505,7 +515,7 @@ class rebateClass extends Model
         }
         if($index>$total){$index=0;$page=1;}
         $limit = " limit {$index}, {$epage}";
-       // echo str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql);
+       echo str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql);
         $list = $this->mysql->get_all(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql));
         global $pager;
         $pager->page=$page;
@@ -513,6 +523,7 @@ class rebateClass extends Model
         $pager->total=$total;
         return array(
             'list' => $list,
+            'moneys' => $moneys,
             'total' => $total,
             'page' => $pager->show()
         );
@@ -529,6 +540,14 @@ class rebateClass extends Model
         if(!empty($data['user_id']))
         {
             $where.=" and rl.user_id={$data['user_id']}";
+        }
+        if(!empty($data['startdate']))
+        {
+            $where.=" and rl.addtime>='{$data['startdate']}'";
+        }
+        if(!empty($data['enddate']))
+        {
+            $where.=" and rl.addtime<'{$data['enddate']}'";
         }
         $sql = "select SELECT from {$this->dbfix}rebate_list rl left join {$this->dbfix}rebate r on rl.rebate_id=r.id
  left join {$this->dbfix}user u on rl.user_id=u.user_id {$where} ORDER LIMIT";
@@ -550,7 +569,7 @@ class rebateClass extends Model
         }
         if($index>$total){$index=0;$page=1;}
         $limit = " limit {$index}, {$epage}";
-        // echo str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql);
+        echo str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql);
         $list = $this->mysql->get_all(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql));
         global $pager;
         $pager->page=$page;
@@ -578,6 +597,14 @@ class rebateClass extends Model
         {
             $where.=" and rl.money={$data['money']}";
         }
+        if(!empty($data['startdate']))
+        {
+            $where.=" and rl.addtime>='{$data['startdate']}'";
+        }
+        if(!empty($data['enddate']))
+        {
+            $where.=" and rl.addtime<'{$data['enddate']}'";
+        }
         if(!empty($data['rebate_id']))
         {
             $where.=" and rl.rebate_id={$data['rebate_id']}";
@@ -586,8 +613,9 @@ class rebateClass extends Model
 
         $_order=isset($data['order'])?' order by '.$data['order']:'order by rl.id desc';
         //总条数
-        $row=$this->mysql->get_one(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array('count(1) as num', '', ''), $sql));
+        $row=$this->mysql->get_one(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array('count(1) as num,sum(money) as moneys', '', ''), $sql));
         $total = $row['num'];
+        $moneys=$row['moneys'];
 
         $epage = empty($data['epage'])?10:$data['epage'];
         $page=$data['page'];
@@ -601,7 +629,7 @@ class rebateClass extends Model
         }
         if($index>$total){$index=0;$page=1;}
         $limit = " limit {$index}, {$epage}";
-        // echo str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql);
+        echo str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql);
         $list = $this->mysql->get_all(str_replace(array('SELECT', 'ORDER', 'LIMIT'), array($_select, $_order, $limit), $sql));
         global $pager;
         $pager->page=$page;
@@ -609,6 +637,7 @@ class rebateClass extends Model
         $pager->total=$total;
         return array(
             'list' => $list,
+            'moneys'=>$moneys,
             'total' => $total,
             'page' => $pager->show()
         );

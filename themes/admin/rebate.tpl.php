@@ -25,6 +25,8 @@ if($this->func=='index')
                 <option value="2"<? if($_GET['status']==2){?> selected="selected"<? }?>>己结束</option>
             </select>&nbsp;&nbsp;
             用户ID<input type="text" name="user_id" value="<?=$_GET['user_id']?>">
+            时间：<input type="text" size="10" name="startdate" value="<?=$_GET['startdate']?>" class="Wdate" onclick="javascript:WdatePicker();">-
+            <input type="text" size="10" name="enddate" value="<?=$_GET['enddate']?>"  class="Wdate" onclick="javascript:WdatePicker();">
             <input type="submit" class="but2" value="查询" />
         </div>
     </form>
@@ -69,6 +71,7 @@ if($this->func=='index')
         <? }?>
     </table>
     <? if(empty($result['total'])){echo "无记录！";}else{echo $result['page'];}?>
+    <br>总计：<?=$result['moneys']?><br>
 <?
     $config_result=$this->mysql->get_all("select k,v,remark from {$this->dbfix}rebate_config");
     $arr=array();
@@ -115,6 +118,8 @@ elseif($this->func=='rebatelist'){
                 <option value="2"<? if($_GET['typeid']==2){?> selected="selected"<? }?>>100队列</option>
             </select>&nbsp;&nbsp;
             用户ID<input type="text" name="user_id" value="<?=$_GET['user_id']?>">
+            时间：<input type="text" size="10" name="startdate" value="<?=$_GET['startdate']?>" class="Wdate" onclick="javascript:WdatePicker();">-
+            <input type="text" size="10" name="enddate" value="<?=$_GET['enddate']?>"  class="Wdate" onclick="javascript:WdatePicker();">
             <input type="submit" class="but2" value="查询" />
         </div>
     </form>
@@ -164,8 +169,10 @@ elseif($this->func=='rebatelist'){
 }elseif($this->func=='rebatelog'){
 
     $arr_typeid=array(
+        '1,1,'=>'天天返',
         '1,1,1,'=>'16天天返',
         '1,1,3,'=>'31天天返',
+        '1,2,'=>'分红',
         '1,2,1,'=>'16平台分红',
         '1,2,2,'=>'15平台分红',
         '1,3,1,1,'=>'排队：500排队',
@@ -194,6 +201,8 @@ elseif($this->func=='rebatelist'){
             金额：<input type="text" size="10" name="money" value="<?=$_GET['money']?>">&nbsp;&nbsp;
             用户ID：<input type="text" size="10" name="user_id" value="<?=$_GET['user_id']?>">&nbsp;&nbsp;
             队列ID：<input type="text" size="10" name="rebate_id" value="<?=$_GET['rebate_id']?>">
+            时间：<input type="text" size="10" name="startdate" value="<?=$_GET['startdate']?>" class="Wdate" onclick="javascript:WdatePicker();">-
+            <input type="text" size="10" name="enddate" value="<?=$_GET['enddate']?>"  class="Wdate" onclick="javascript:WdatePicker();">
             <input type="submit" class="but2" value="查询" />
         </div>
     </form>
@@ -226,6 +235,7 @@ elseif($this->func=='rebatelist'){
         <? }?>
     </table>
     <? if(empty($result['total'])){echo "无记录！";}else{echo $result['page'];}?>
+    总计：<?=$result['moneys']?>
 <?
 }
 require 'footer.php';

@@ -17,21 +17,8 @@ $pager=new Page();
 require 'core/pdo.php';
 $mysql = DB::instance('db1');
 
-//$row=DB::table('plf_fbb')->where('id>10')->limit(10)->lists('id');
-//print_r($row);
-//$row=DB::table('plf_rebate_config')->lists('v','k');
-//print_r($row);
-//$row=DB::table('plf_fbb')->select('id,user_id,money')->where('id=1')->row();
-//print_r($row);
-//$row=DB::get_all("select * from plf_fbb where id>? limit 10",array(10));
-//print_r($row);
-//$row=DB::table('plf_fbb')->select('id,user_id,money')->where('id<10')->orderBy('id desc')->all();
-//print_r($row);
-//echo '<br>'.DB::table('plf_fbb')->where('id=1')->value('money');
 
-//$aa=DB::get_all("select * from plf_fbb where id =:id limit 10",array('id'=>1));
-//$aa=$mysql->query("insert into  uc_vars(name,value)values(?,?)",array('555','sdf'));
-//print_r($aa);
+
 
 require 'core/Controller.php';
 $_G['class']=($uriClass->get(0)!='')?$uriClass->get(0):'index';

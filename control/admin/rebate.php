@@ -10,6 +10,8 @@ class rebate extends Manager
     {
         $arr=array(
             'typeid'		=>(int)$_GET['typeid'],
+            'startdate'		=>$_GET['startdate'],
+            'enddate'		=>$_GET['enddate'],
             'status'		=>$_GET['status'],
             'user_id'		=>(int)$_GET['user_id'],
             'page'			=>(int)$_REQUEST['page'],
@@ -72,6 +74,8 @@ class rebate extends Manager
     function rebatelist(){
         $arr=array(
             'typeid'		=>(int)$_GET['typeid'],
+            'startdate'		=>$_GET['startdate'],
+            'enddate'		=>$_GET['enddate'],
             'user_id'		=>(int)$_GET['user_id'],
             'page'			=>(int)$_REQUEST['page'],
             'epage'			=>10
@@ -82,6 +86,8 @@ class rebate extends Manager
     function rebatelog(){
         $arr=array(
             'typeid'		=>$_GET['typeid'],
+            'startdate'		=>$_GET['startdate'],
+            'enddate'		=>$_GET['enddate'],
             'user_id'		=>(int)$_GET['user_id'],
             'rebate_id'		=>(int)$_GET['rebate_id'],
             'money'		=>(float)$_GET['money'],

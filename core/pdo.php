@@ -5,6 +5,16 @@ class DbConnection
     protected $pdo;
     protected $dbfix;
     protected $sQuery;
+    protected $join=array();
+    protected $bindValues=array();
+    protected $select='';
+    protected $distinct='';
+    protected $from='';
+    protected $where='';
+    protected $orderBy='';
+    protected $groupBy='';
+    protected $having='';
+    protected $limit='';
 
     public function __construct($host, $port, $user, $password, $db_name, $charset = 'utf8', $dbfix = '')
     {
@@ -40,10 +50,16 @@ class DbConnection
         $this->pdo = null;
     }
 
-    function query($query, $params = array())
+    function query($query, $params = null)
     {
+        if ($params == null) {
+            $params = $this->bindValues;
+        }
+        if (!is_array($params)) {
+            $params = array($params);
+        }
         $this->sQuery = $this->pdo->prepare($query);
-        if (!empty($params) && is_array($params)) {
+        if (is_array($params)) {
             foreach ($params as $k => &$v) {
                 if (is_string($k)) {
                     $this->sQuery->bindParam(':' . $k, $v);
@@ -52,6 +68,7 @@ class DbConnection
                 }
             }
         }
+        $this->reset();
         $this->sQuery->execute();
         $rawStatement = explode(" ", trim($query));
         $statement = strtolower($rawStatement[0]);
@@ -66,14 +83,14 @@ class DbConnection
         }
     }
 
-    public function get_one($sql, $param = array())
+    public function get_one($sql, $param =null)
     {
         $this->query($sql, $param);
         $result = $this->sQuery->fetch();
         return $result;
     }
 
-    public function get_all($sql, $param = array())
+    public function get_all($sql, $param = null)
     {
         $this->query($sql, $param);
         $result = $this->sQuery->fetchAll();
@@ -205,6 +222,8 @@ class DbConnection
         $this->distinct = '';
         $this->select = '';
         $this->from = '';
+        $this->join=array();
+        $this->bindValues=array();
         $this->where = '';
         $this->groupBy = '';
         $this->having = '';
@@ -217,13 +236,26 @@ class DbConnection
             $this->select = '*';
         }
         $sql = "select {$this->distinct} {$this->select} from {$this->from}"
+            . $this->buildJoin()
             . $this->where
             . $this->orderBy
             . $this->groupBy
+            . $this->having
             . $this->limit;
-        $this->reset();
         return $sql;
     }
+
+    private function buildDelete()
+    {
+        $sql = "DELETE FROM {$this->from}" . $this->where . $this->limit;
+        return $sql;
+    }
+
+    private function buildJoin()
+    {
+        return implode(' ',$this->join);
+    }
+
     public function table($table)
     {
         $this->from = $table;
@@ -234,6 +266,27 @@ class DbConnection
     {
         $this->select = $str;
         return $this;
+    }
+
+    public function join($table,$cond = null)
+    {
+        $this->joinInternal('INNER',$table,$cond);
+        return $this;
+    }
+    public function leftJoin($table,$cond = null)
+    {
+        $this->joinInternal('LEFT',$table,$cond);
+        return $this;
+    }
+    public function rightJoin($table,$cond = null)
+    {
+        $this->joinInternal('RIGHT',$table,$cond);
+        return $this;
+    }
+
+    protected function joinInternal($join, $table, $cond = null)
+    {
+        array_push($this->join," {$join} JOIN {$table} ON {$cond} ");
     }
 
     public function distinct()
@@ -272,11 +325,23 @@ class DbConnection
         return $this;
     }
 
+    public function bindValues($arr=array())
+    {
+        $this->bindValues=$arr;
+        return $this;
+    }
+
     //取一行
     public function row()
     {
         $sql = $this->buildSelect() . " limit 1";
         return $this->get_one($sql);
+    }
+    //取多行
+    public function all()
+    {
+        $sql = $this->buildSelect();
+        return $this->get_all($sql);
     }
 
     //取一行中一列的值
@@ -287,12 +352,7 @@ class DbConnection
         return $row[$col];
     }
 
-    //取多行
-    public function all()
-    {
-        $sql = $this->buildSelect();
-        return $this->get_all($sql);
-    }
+
 
     //取一列
     public function lists($col, $key = null)
@@ -329,15 +389,18 @@ class Config
     );
 }
 
+/**
+ * Class DB
+ * @property query()
+ */
 class DB
 {
     //实例数组
     protected static $instance = array();
 
-   //获取实例
     /**
      * @param null $config_name
-     * @return mixed
+     * @return DbConnection
      * @throws Exception
      */
     public static function instance($config_name = null)
@@ -358,12 +421,23 @@ class DB
     }
 
 /////////////////////////////////////////////
+    /**
+     * @param $table
+     * @param null $connection
+     * @return DbConnection
+     * @throws Exception
+     */
     public static function table($table, $connection = null)
     {
-        //return static::instance($connection)->from($table);
         return self::instance($connection)->table($table);
     }
 
+    /**
+     * @param $method
+     * @param $parameters
+     * @return DbConnection
+     * @throws Exception
+     */
     public static function __callStatic($method, $parameters)
     {
         return call_user_func_array([self::instance(), $method], $parameters);
@@ -389,24 +463,41 @@ class DB
 }
 
 /*
-$mysql = Db::instance('db1');
-$a = $mysql->get_one("select * from test11 limit 1");
-print_r($a);
-$a = $mysql->get_all("select * from test");
-print_r($a);
+$mysql = DB::instance('db1');
+
+
+//$row = DB::table('plf_user a')->select('a.*')
+//    ->leftJoin('plf_rebate_user c', 'c.user_id=a.user_id')
+//    ->limit(2)->orderBy('a.user_id desc')->where("a.user_id> ? ")->bindValues(10)->all();
+//print_r($row);
+
+//$row=DB::table('plf_fbb')->where('id>10')->limit(10)->lists('id');
+//print_r($row);
+//$row=DB::table('plf_rebate_config')->lists('v','k');
+//print_r($row);
+//$row=DB::table('plf_fbb')->select('id,user_id,money')->where('id=1')->row();
+//print_r($row);
+//$row=DB::get_all("select * from plf_fbb where id>? limit 10",array(10));
+//print_r($row);
+//$row=DB::table('plf_fbb')->select('id,user_id,money')->where('id<10')->orderBy('id desc')->all();
+//print_r($row);
+//echo '<br>'.DB::table('plf_fbb')->where('id=1')->value('money');
+
+//$aa=$mysql->query("insert into  uc_vars(name,value)values(?,?)",array('555','sdf'));
+//print_r($aa);
 
 
 try {
+            $this->mysql->beginTransaction();
 
-    $mysql->beginTransaction();
-    echo $mysql->insert('test', array('name' => 1, 'value' => 2));
-    echo $mysql->insert('test', array('name' => 1, 'value' => 2));
-    echo $mysql->insert_id();
+,........
 
-    $mysql->commit();
+            $this->mysql->commit();
+        } catch (Exception $e) {
+            $this->mysql->rollBack();
+            echo "Failed: " . $e->getMessage();
+            return false;
+        }
+        return true;
 
-} catch (Exception $e) {
-    $mysql->rollBack();
-    echo "Failed: " . $e->getMessage();
-}
 */
