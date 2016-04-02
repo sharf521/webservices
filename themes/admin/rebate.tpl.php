@@ -5,8 +5,8 @@ if($this->func=='index')
     ?>
     <div class="main_title">
         <span>对列管理</span>列表<?=$this->anchor('rebate/add','新增','class="but1"');?>
-        <?=$this->anchor('rebate/calRebate','计算天天返|分红','class="but1"')?>
-        <?=$this->anchor('rebate/cal2','计算排队','class="but1"')?>
+        <?=$this->anchor('rebate/calRebate','计算','class="but1"')?>
+
         <?=$this->anchor('rebate/cal3','计算排队30倍返','class="but1"')?>
     </div>
     <form method="get">

@@ -83,7 +83,7 @@ class rebateClass extends Model
                 $this->mysql->update('rebate_config',array('v'=>$rebate_date),"k='rebate_date' limit 1");
                 $this->calEveryDay($rebate_date);
                 $this->calDividend($rebate_date);
-
+                $this->calRebateList($rebate_date);
                 $this->mysql->commit();
             } catch (Exception $e) {
                 $this->mysql->rollBack();
@@ -94,19 +94,19 @@ class rebateClass extends Model
         }
         return true;
     }
-    function cal2()
-    {
-        try {
-            $this->mysql->beginTransaction();
-            $this->calRebateList();
-            $this->mysql->commit();
-        } catch (Exception $e) {
-            $this->mysql->rollBack();
-            echo "Failed: " . $e->getMessage();
-            return false;
-        }
-        return true;
-    }
+//    function cal2()
+//    {
+//        try {
+//            $this->mysql->beginTransaction();
+//            $this->calRebateList();
+//            $this->mysql->commit();
+//        } catch (Exception $e) {
+//            $this->mysql->rollBack();
+//            echo "Failed: " . $e->getMessage();
+//            return false;
+//        }
+//        return true;
+//    }
     function cal3()
     {
         try {
@@ -121,17 +121,17 @@ class rebateClass extends Model
         return true;
     }
     //生成排队位置
-    function calRebateList(){
+    function calRebateList($rebate_date){
        // $today=date('Y-m-d');
-        //$sql="select id,user_id,money,addtime,money_rebate from {$this->dbfix}rebate where status=0 and addtime<'{$rebate_date}'";
-        $sql="select id,user_id,money,addtime,money_rebate,typeid from {$this->dbfix}rebate where status=0 ";
+        $sql="select id,user_id,money,addtime,money_rebate from {$this->dbfix}rebate where status=0 and addtime<'{$rebate_date}'";
+        //$sql="select id,user_id,money,addtime,money_rebate,typeid from {$this->dbfix}rebate where status=0 ";
         $result=$this->mysql->get_all($sql);
         foreach($result as $row){
             $this->mysql->update('rebate',array('status'=>1),"id={$row['id']} limit 1");//改为己处理
             $user=$this->mysql->one('rebate_user',array('user_id'=>$row['user_id']));
-            if($row['typeid']==3){
-                $row['money']=$row['money']*2;
-            }
+//            if($row['typeid']==3){
+//                $row['money']=$row['money']*2;
+//            }
             $money=bcadd($row['money'],floatval($user['money_last']),5);
             $nums500=bcdiv($money,500);//500排队个数
             if($nums500>0){
@@ -215,7 +215,8 @@ class rebateClass extends Model
             $money_all=bcmul($position_money,$quantity_ying);//500的倍数
 
             //返还给用户
-            $this->rebateMoney($money_all,$rList['user_id'],'1,3,1,'.$typeid.',',array('rebate_list_in'=>$rebate_list['id'],'rebate_list_out'=>$rList['id']));
+            $arr = array('rebate_list_in' => $rebate_list['id'], 'rebate_list_out' => $rList['id'], 'rebate_id' => $rebate['id']);
+            $this->rebateMoney($money_all,$rList['user_id'],'1,3,1,'.$typeid.',',$arr);
             if($to_quantity==0){
                 break;
             }
@@ -231,7 +232,12 @@ class rebateClass extends Model
     function rebateMoney($money,$user_id,$typeid,$data)
     {
         $date=isset($data['date'])?$data['date']:date('Y-m-d H:i:s');
-        $sql="select  id,user_id,money,money_rebate from {$this->dbfix}rebate where user_id={$user_id} and status!=2 order by id";
+        $where="where user_id={$user_id} and status!=2";
+        if(isset($data['rebate_id'])){
+            $rebate_id=(int)$data['rebate_id'];
+            $where.=" and id<={$rebate_id}";
+        }
+        $sql="select  id,user_id,money,money_rebate from {$this->dbfix}rebate {$where} order by id";
         $restult=$this->mysql->get_all($sql);
         foreach($restult as $row){
             $rebate_log=array(
