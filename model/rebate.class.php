@@ -154,6 +154,7 @@ class rebateClass extends Model
         }
     }
     /*
+     * 开始排队
      * $quantity:点位数量
      * $typeid: 1:500队，2:100队
      * $money_last:剩余金额--log查看
@@ -216,7 +217,7 @@ class rebateClass extends Model
             $money_all=bcmul($position_money,$quantity_ying);//500的倍数
 
             //返还给用户
-            $arr = array('rebate_list_in' => $rebate_list['id'], 'rebate_list_out' => $rList['id'], 'rebate_id' => $rebate['id']);
+            $arr = array('rebate_list_in' => $rebate_list['id'], 'rebate_list_out' => $rList['id'], 'rebate_id' => $rList['rebate_id']);
             $this->rebateMoney($money_all,$rList['user_id'],'1,3,1,'.$typeid.',',$arr);
             if($to_quantity==0){
                 break;
@@ -224,8 +225,8 @@ class rebateClass extends Model
         }
     }
 
-    //返还给用户
     /*
+     * 返还给用户
      * $money_all:返还的金额
      * $user_id:返还的用户id
      * $typeid:类型 1,3,1,
@@ -274,7 +275,11 @@ class rebateClass extends Model
         return true;
     }
 
-    //整数倍返  60返1，70返1
+    /**
+     * 整数倍返  60返1，70返1
+     * @param $rebate  消费记录
+     * @param $rebate_list  消费记录进入的排队
+     */
     function calRebate_Just60Return($rebate,$rebate_list)
     {
         //整数倍返 概率0 到1
@@ -409,7 +414,7 @@ class rebateClass extends Model
             foreach($result15 as $k=>$row){
                 $_num=bcdiv($row['money'],$rabate2_dividend_equity);
                 $nums15+=$_num;
-                $result15[$k]['nums15']=$_num;
+                $result15[$k]['num15']=$_num;
             }
             if($nums15>0){
                 $one15_money=bcdiv($total,$nums15,5);//15队列每份分红金额
